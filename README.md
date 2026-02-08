@@ -15,21 +15,12 @@ HTML5 게임 모음집
 
 ---
 
-### 🚀 Space Survivors (쿼터뷰)
-디아블로 스타일 쿼터뷰 슈팅
+### 🚀 Space Survivors
+디아블로 스타일 쿼터뷰 서바이버
 - 아이소메트릭 시점
-- 업그레이드 시스템
+- 12종 무기 시스템
+- 5개 레벨업 선택지
 - 무한 생존 모드
-
-[플레이하기](space_survivors_iso.html)
-
----
-
-### 🚀 Space Survivors (탑다운)
-빠른 액션 슈팅
-- 전방위 공격
-- 자동 발사
-- 레벨업 & 강화
 
 [플레이하기](space_survivors.html)
 

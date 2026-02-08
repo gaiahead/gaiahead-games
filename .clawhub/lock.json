@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "skills": {
+    "better-notion": {
+      "version": "1.1.0",
+      "installedAt": 1770370225287
+    },
+    "postgres": {
+      "version": "1.1.0",
+      "installedAt": 1770370229941
+    },
+    "github": {
+      "version": "1.0.0",
+      "installedAt": 1770370234246
+    },
+    "apple-calendar": {
+      "version": "1.0.0",
+      "installedAt": 1770370239217
+    },
+    "email": {
+      "version": "1.1.0",
+      "installedAt": 1770370245166
+    },
+    "github-action-gen": {
+      "version": "1.0.2",
+      "installedAt": 1770370250626
+    },
+    "database": {
+      "version": "1.1.0",
+      "installedAt": 1770370255718
+    },
+    "spotify": {
+      "version": "1.0.0",
+      "installedAt": 1770370261147
+    },
+    "kubernetes": {
+      "version": "1.0.0",
+      "installedAt": 1770378327674
+    },
+    "kubectl": {
+      "version": "1.0.0",
+      "installedAt": 1770378330475
+    },
+    "k8s-gen": {
+      "version": "1.0.0",
+      "installedAt": 1770378333190
+    },
+    "k8s-browser": {
+      "version": "1.0.0",
+      "installedAt": 1770378335346
+    },
+    "k8s-backup": {
+      "version": "1.0.0",
+      "installedAt": 1770378337715
+    },
+    "k8s-certs": {
+      "version": "1.0.0",
+      "installedAt": 1770378340066
+    }
+  }
+}
