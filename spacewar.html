@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Space Survivors - 우주 서바이버</title>
+    <title>Space War - 우주 전쟁 (Enhanced)</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -16,12 +17,6 @@
             background: #000;
             color: #fff;
             overflow: hidden;
-        }
-        
-        #gameCanvas {
-            display: block;
-            background: #1a1a2e;
-            image-rendering: pixelated;
         }
         
         #ui {
@@ -41,6 +36,7 @@
             padding: 10px;
             display: inline-block;
             margin-right: 20px;
+            box-shadow: 0 0 15px rgba(0,255,255,0.3);
         }
         
         .stat-label {
@@ -62,10 +58,12 @@
             height: 100%;
             background: linear-gradient(90deg, #00ff00, #00cc00);
             transition: width 0.3s;
+            box-shadow: 0 0 10px rgba(0,255,0,0.5);
         }
         
         .exp-bar .bar-fill {
             background: linear-gradient(90deg, #ffff00, #ff9900);
+            box-shadow: 0 0 10px rgba(255,255,0,0.5);
         }
         
         #levelUpModal {
@@ -81,6 +79,7 @@
             z-index: 100;
             max-width: 1000px;
             pointer-events: auto;
+            box-shadow: 0 0 40px rgba(0,255,255,0.6);
         }
         
         .upgrade-grid {
@@ -140,6 +139,7 @@
             display: none;
             z-index: 100;
             text-align: center;
+            box-shadow: 0 0 40px rgba(255,0,0,0.6);
         }
         
         .btn {
@@ -170,11 +170,12 @@
             padding: 15px;
             font-size: 14px;
             color: #0ff;
+            box-shadow: 0 0 15px rgba(0,255,255,0.3);
         }
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas"></canvas>
+    <div id="game-container"></div>
     
     <div id="ui">
         <div class="stat-bar">
@@ -213,34 +214,40 @@
     </div>
 
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        
-        // 쿼터뷰 변환
-        const iso = {
-            toScreen: function(worldX, worldY) {
-                const rotX = (worldX - worldY) * 0.707;
-                const rotY = (worldX + worldY) * 0.707;
-                return {
-                    x: rotX,
-                    y: rotY * 0.5
-                };
+        // Phaser 설정
+        const config = {
+            type: Phaser.AUTO,
+            width: window.innerWidth,
+            height: window.innerHeight,
+            parent: 'game-container',
+            backgroundColor: '#1a1a2e',
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    gravity: { y: 0 },
+                    debug: false
+                }
+            },
+            scene: {
+                preload: preload,
+                create: create,
+                update: update
             }
         };
+
+        const phaserGame = new Phaser.Game(config);
         
-        // 게임 상태
+        // 전역 변수
+        let scene;
+        let graphics;
+        let particleEmitters = [];
+        
+        // 게임 상태 (원래 로직 유지)
         const game = {
             running: true,
             paused: false,
             time: 0,
             kills: 0,
-            camera: {
-                x: 0,
-                y: 0
-            },
             player: {
                 x: 0,
                 y: 0,
@@ -258,8 +265,8 @@
             projectiles: [],
             particles: []
         };
-        
-        // 무기 정의 (대폭 확장!)
+
+        // 무기 정의 (원래 로직 그대로)
         const weaponTypes = {
             laser: {
                 name: '레이저 포',
@@ -281,8 +288,9 @@
                             vy: Math.sin(angle) * 200,
                             size: 6,
                             damage: this.damage * (1 + this.level * 0.5),
-                            color: '#00ffff',
-                            type: 'laser'
+                            color: 0x00ffff,
+                            type: 'laser',
+                            gfx: null
                         });
                     }
                 }
@@ -308,10 +316,11 @@
                             vy: 0,
                             size: 8,
                             damage: this.damage * (1 + this.level * 0.4),
-                            color: '#ff6600',
+                            color: 0xff6600,
                             type: 'missile',
                             target: target,
-                            speed: 150
+                            speed: 150,
+                            gfx: null
                         });
                     }
                 }
@@ -336,8 +345,9 @@
                             vy: Math.sin(angle) * 180,
                             size: 10,
                             damage: this.damage * (1 + this.level * 0.3),
-                            color: '#ff00ff',
-                            type: 'plasma'
+                            color: 0xff00ff,
+                            type: 'plasma',
+                            gfx: null
                         });
                     }
                 }
@@ -358,9 +368,8 @@
                     
                     for (let i = 0; i < chains && current; i++) {
                         current.hp -= this.damage * (1 + this.level * 0.5);
-                        createParticles(current.x, current.y, 0, '#ffff00', 15);
+                        createParticles(current.x, current.y, 0, 0xffff00, 15);
                         
-                        // 다음 타겟 찾기
                         let next = null;
                         let minDist = 300;
                         for (const enemy of game.enemies) {
@@ -397,9 +406,10 @@
                             vy: Math.sin(angle) * speed,
                             size: 8,
                             damage: this.damage * (1 + this.level * 0.3),
-                            color: '#ff4500',
+                            color: 0xff4500,
                             type: 'flame',
-                            life: 20 + this.level * 5
+                            life: 20 + this.level * 5,
+                            gfx: null
                         });
                     }
                 }
@@ -427,9 +437,10 @@
                         vy: Math.sin(angle) * 400,
                         size: 12,
                         damage: this.damage * (1 + this.level * 0.6),
-                        color: '#00ff88',
+                        color: 0x00ff88,
                         type: 'railgun',
-                        pierce: 3 + this.level
+                        pierce: 3 + this.level,
+                        gfx: null
                     });
                 }
             },
@@ -453,9 +464,10 @@
                         vz: 100,
                         size: 10,
                         damage: this.damage * (1 + this.level * 0.5),
-                        color: '#ff0000',
+                        color: 0xff0000,
                         type: 'bomb',
-                        radius: 100 + this.level * 20
+                        radius: 100 + this.level * 20,
+                        gfx: null
                     });
                 }
             },
@@ -481,8 +493,9 @@
                             vy: Math.sin(angle) * 180,
                             size: 6,
                             damage: this.damage * (1 + this.level * 0.4),
-                            color: '#00ccff',
-                            type: 'drone'
+                            color: 0x00ccff,
+                            type: 'drone',
+                            gfx: null
                         });
                     }
                 }
@@ -500,9 +513,8 @@
                     const count = 1 + Math.floor(this.level / 2);
                     for (let i = 0; i < count; i++) {
                         const target = game.enemies[i % game.enemies.length];
-                        // 즉시 타격
                         target.hp -= this.damage * (1 + this.level * 0.5);
-                        createParticles(target.x, target.y, 0, '#00ffff', 20);
+                        createParticles(target.x, target.y, 0, 0x00ffff, 20);
                     }
                 }
             },
@@ -536,8 +548,379 @@
                 apply: function() {}
             }
         };
-        
-        // 업그레이드 선택
+
+        // Phaser 함수들
+        function preload() {
+            scene = this;
+        }
+
+        function create() {
+            graphics = this.add.graphics();
+            
+            // 타이머
+            this.time.addEvent({
+                delay: 1000,
+                callback: () => {
+                    if (!game.paused) {
+                        game.time++;
+                        updateUI();
+                    }
+                },
+                loop: true
+            });
+        }
+
+        let enemySpawnTimer = 0;
+        let lastFrameTime = 0;
+
+        function update(time, delta) {
+            if (!game.running || game.paused) return;
+
+            const deltaTime = delta / 1000;
+            
+            // 무기 발사
+            game.weapons.forEach(weapon => {
+                const weaponData = weaponTypes[weapon.type];
+                if (time - weapon.lastShot > weaponData.cooldown) {
+                    weaponData.shoot(game.player);
+                    weapon.lastShot = time;
+                }
+            });
+            
+            // 발사체 업데이트 (원래 로직)
+            game.projectiles = game.projectiles.filter(proj => {
+                if (proj.life !== undefined) {
+                    proj.life--;
+                    if (proj.life <= 0) {
+                        if (proj.gfx) proj.gfx.destroy();
+                        return false;
+                    }
+                }
+                
+                if (proj.type === 'bomb' && proj.vz !== undefined) {
+                    proj.z += proj.vz * deltaTime;
+                    proj.vz -= 200 * deltaTime;
+                    if (proj.z <= 0) {
+                        proj.z = 0;
+                        game.enemies.forEach(enemy => {
+                            const dist = Math.hypot(enemy.x - proj.x, enemy.y - proj.y);
+                            if (dist < proj.radius) {
+                                enemy.hp -= proj.damage * (1 + (weaponTypes.damage.level * 0.1));
+                                createParticles(enemy.x, enemy.y, 0, 0xff6600, 10);
+                            }
+                        });
+                        createParticles(proj.x, proj.y, 0, 0xff0000, 40);
+                        if (proj.gfx) proj.gfx.destroy();
+                        return false;
+                    }
+                }
+                
+                if (proj.type === 'missile' && proj.target) {
+                    const dx = proj.target.x - proj.x;
+                    const dy = proj.target.y - proj.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist > 1) {
+                        proj.vx = (dx/dist) * proj.speed;
+                        proj.vy = (dy/dist) * proj.speed;
+                    }
+                }
+                
+                proj.x += proj.vx * deltaTime;
+                proj.y += proj.vy * deltaTime;
+                
+                const distFromPlayer = Math.hypot(proj.x, proj.y);
+                if (distFromPlayer > 1500) {
+                    if (proj.gfx) proj.gfx.destroy();
+                    return false;
+                }
+                return true;
+            });
+            
+            // 적 업데이트
+            game.enemies.forEach(enemy => {
+                const dx = -enemy.x;
+                const dy = -enemy.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                
+                if (dist > 1) {
+                    enemy.x += (dx/dist) * enemy.speed * deltaTime;
+                    enemy.y += (dy/dist) * enemy.speed * deltaTime;
+                }
+                
+                if (dist < game.player.size + enemy.size) {
+                    game.player.hp -= enemy.damage;
+                    createParticles(enemy.x, enemy.y, 0, 0xff0000, 5);
+                    enemy.hp = 0;
+                    
+                    if (game.player.hp <= 0) {
+                        gameOver();
+                    }
+                }
+            });
+            
+            // 충돌 체크
+            game.projectiles.forEach(proj => {
+                if (proj.type === 'bomb') return;
+                
+                game.enemies.forEach(enemy => {
+                    const dx = proj.x - enemy.x;
+                    const dy = proj.y - enemy.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    
+                    if (dist < proj.size + enemy.size) {
+                        const totalDamage = proj.damage * (1 + (weaponTypes.damage.level * 0.1));
+                        enemy.hp -= totalDamage;
+                        createParticles(enemy.x, enemy.y, 0, proj.color, 8);
+                        
+                        if (proj.pierce) {
+                            proj.pierce--;
+                            if (proj.pierce <= 0) proj.x = -99999;
+                        } else {
+                            proj.x = -99999;
+                        }
+                        
+                        if (enemy.hp <= 0) {
+                            game.kills++;
+                            game.player.exp += 10;
+                            createParticles(enemy.x, enemy.y, 0, 0xffff00, 20);
+                            
+                            if (game.player.exp >= game.player.expToNext) {
+                                game.player.level++;
+                                game.player.exp -= game.player.expToNext;
+                                game.player.expToNext = Math.floor(game.player.expToNext * 1.2);
+                                showLevelUp();
+                            }
+                        }
+                    }
+                });
+            });
+            
+            game.enemies = game.enemies.filter(e => {
+                if (e.hp <= 0) {
+                    if (e.gfx) e.gfx.destroy();
+                    return false;
+                }
+                return true;
+            });
+            
+            // 파티클 업데이트
+            game.particles = game.particles.filter(p => {
+                p.x += p.vx * deltaTime;
+                p.y += p.vy * deltaTime;
+                if (p.vz) {
+                    p.z += p.vz * deltaTime;
+                    p.vz -= 200 * deltaTime;
+                    if (p.z < 0) {
+                        p.z = 0;
+                        p.vz = 0;
+                    }
+                }
+                p.life--;
+                return p.life > 0;
+            });
+            
+            // 적 스폰
+            const spawnRate = Math.max(300 - game.time * 8, 100);
+            enemySpawnTimer += delta;
+            if (enemySpawnTimer > spawnRate) {
+                spawnEnemy();
+                enemySpawnTimer = 0;
+            }
+            
+            // 렌더
+            render(this);
+            updateUI();
+        }
+
+        function spawnEnemy() {
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 600;
+            const x = Math.cos(angle) * distance;
+            const y = Math.sin(angle) * distance;
+            
+            const difficulty = 1 + game.time / 60;
+            
+            game.enemies.push({
+                x, y,
+                size: 15,
+                hp: 25 * difficulty,
+                maxHp: 25 * difficulty,
+                speed: 80 * Math.min(difficulty, 2),
+                damage: 3,
+                color: 0xff0000,
+                gfx: null
+            });
+        }
+
+        function createParticles(x, y, z, color, count = 10) {
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 100 + 50;
+                game.particles.push({
+                    x, y, z: 10,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    vz: Math.random() * 30 + 10,
+                    size: Math.random() * 4 + 2,
+                    color,
+                    life: 30
+                });
+            }
+        }
+
+        // 쿼터뷰 변환
+        function iso(worldX, worldY) {
+            const rotX = (worldX - worldY) * 0.707;
+            const rotY = (worldX + worldY) * 0.707;
+            return {
+                x: rotX,
+                y: rotY * 0.5
+            };
+        }
+
+        function render(scene) {
+            graphics.clear();
+            
+            const centerX = config.width / 2;
+            const centerY = config.height / 2;
+            
+            // 그리드
+            graphics.lineStyle(1, 0xffffff, 0.1);
+            const gridSize = 100;
+            for (let gx = -10; gx < 10; gx++) {
+                for (let gy = -10; gy < 10; gy++) {
+                    const worldX = gx * gridSize;
+                    const worldY = gy * gridSize;
+                    const screenPos = iso(worldX, worldY);
+                    const x = centerX + screenPos.x;
+                    const y = centerY + screenPos.y;
+                    
+                    const tileSize = 50;
+                    graphics.fillStyle(((gx + gy) % 2 === 0) ? 0x323246 : 0x1e1e32, 0.3);
+                    graphics.beginPath();
+                    graphics.moveTo(x, y);
+                    graphics.lineTo(x + tileSize, y + tileSize * 0.5);
+                    graphics.lineTo(x, y + tileSize);
+                    graphics.lineTo(x - tileSize, y + tileSize * 0.5);
+                    graphics.closePath();
+                    graphics.fillPath();
+                    graphics.strokePath();
+                }
+            }
+            
+            // 렌더 리스트
+            const renderList = [];
+            
+            // 파티클
+            game.particles.forEach(p => {
+                const screenPos = iso(p.x, p.y);
+                renderList.push({
+                    y: p.y,
+                    render: () => {
+                        const x = centerX + screenPos.x;
+                        const y = centerY + screenPos.y - p.z * 0.5;
+                        graphics.fillStyle(p.color, p.life / 30);
+                        graphics.fillRect(x - p.size/2, y - p.size/2, p.size, p.size);
+                    }
+                });
+            });
+            
+            // 발사체
+            game.projectiles.forEach(proj => {
+                const screenPos = iso(proj.x, proj.y);
+                renderList.push({
+                    y: proj.y,
+                    render: () => {
+                        const x = centerX + screenPos.x;
+                        const y = centerY + screenPos.y - (proj.z || 10) * 0.5;
+                        
+                        graphics.fillStyle(proj.color, 1);
+                        graphics.fillCircle(x, y, proj.size);
+                        
+                        // 글로우 효과
+                        graphics.fillStyle(proj.color, 0.3);
+                        graphics.fillCircle(x, y, proj.size * 2);
+                    }
+                });
+            });
+            
+            // 적
+            game.enemies.forEach(enemy => {
+                const screenPos = iso(enemy.x, enemy.y);
+                renderList.push({
+                    y: enemy.y,
+                    render: () => {
+                        const x = centerX + screenPos.x;
+                        const y = centerY + screenPos.y;
+                        
+                        // 그림자
+                        graphics.fillStyle(0x000000, 0.4);
+                        graphics.fillEllipse(x, y + 5, 15, 8);
+                        
+                        // 적
+                        graphics.fillStyle(enemy.color, 1);
+                        graphics.lineStyle(2, 0xaa0000);
+                        graphics.fillCircle(x, y - 5, enemy.size);
+                        graphics.strokeCircle(x, y - 5, enemy.size);
+                        
+                        // HP 바
+                        const hpBarWidth = 30;
+                        const hpPercent = enemy.hp / enemy.maxHp;
+                        graphics.fillStyle(0x333333, 1);
+                        graphics.fillRect(x - hpBarWidth/2, y - enemy.size - 15, hpBarWidth, 3);
+                        graphics.fillStyle(0xff0000, 1);
+                        graphics.fillRect(x - hpBarWidth/2, y - enemy.size - 15, hpBarWidth * hpPercent, 3);
+                    }
+                });
+            });
+            
+            // 플레이어
+            renderList.push({
+                y: 0,
+                render: () => {
+                    const x = centerX;
+                    const y = centerY;
+                    
+                    // 그림자
+                    graphics.fillStyle(0x000000, 0.4);
+                    graphics.fillEllipse(x, y + 8, 20, 10);
+                    
+                    // 플레이어 (삼각형)
+                    graphics.fillStyle(0x00ffff, 1);
+                    graphics.lineStyle(2, 0x00aaaa);
+                    graphics.beginPath();
+                    graphics.moveTo(x, y - 25);
+                    graphics.lineTo(x - 15, y + 5);
+                    graphics.lineTo(x, y);
+                    graphics.lineTo(x + 15, y + 5);
+                    graphics.closePath();
+                    graphics.fillPath();
+                    graphics.strokePath();
+                    
+                    // 엔진
+                    graphics.fillStyle(0xff6600, 1);
+                    graphics.fillCircle(x - 5, y + 5, 3);
+                    graphics.fillCircle(x + 5, y + 5, 3);
+                    
+                    // 글로우
+                    graphics.fillStyle(0x00ffff, 0.3);
+                    graphics.fillCircle(x, y - 10, 20);
+                    
+                    // HP 바
+                    const hpBarWidth = 40;
+                    const hpPercent = game.player.hp / game.player.maxHp;
+                    graphics.fillStyle(0x333333, 1);
+                    graphics.fillRect(x - hpBarWidth/2, y - 35, hpBarWidth, 4);
+                    graphics.fillStyle(hpPercent > 0.3 ? 0x00ff00 : 0xff0000, 1);
+                    graphics.fillRect(x - hpBarWidth/2, y - 35, hpBarWidth * hpPercent, 4);
+                }
+            });
+            
+            // Y 정렬 후 렌더
+            renderList.sort((a, b) => a.y - b.y);
+            renderList.forEach(obj => obj.render());
+        }
+
         function showLevelUp() {
             game.paused = true;
             const modal = document.getElementById('levelUpModal');
@@ -572,7 +955,7 @@
             
             modal.style.display = 'block';
         }
-        
+
         function selectUpgrade(key) {
             const weapon = weaponTypes[key];
             weapon.level++;
@@ -591,357 +974,8 @@
             document.getElementById('levelUpModal').style.display = 'none';
             game.paused = false;
         }
-        
-        // 적 생성
-        function spawnEnemy() {
-            const angle = Math.random() * Math.PI * 2;
-            const distance = 600;
-            const x = Math.cos(angle) * distance;
-            const y = Math.sin(angle) * distance;
-            
-            const difficulty = 1 + game.time / 60;
-            
-            game.enemies.push({
-                x, y,
-                size: 15,
-                hp: 25 * difficulty,
-                maxHp: 25 * difficulty,
-                speed: 80 * Math.min(difficulty, 2),
-                damage: 3,
-                color: '#ff0000'
-            });
-        }
-        
-        // 파티클 생성
-        function createParticles(x, y, z, color, count = 10) {
-            for (let i = 0; i < count; i++) {
-                const angle = Math.random() * Math.PI * 2;
-                const speed = Math.random() * 100 + 50;
-                game.particles.push({
-                    x, y, z: 10,
-                    vx: Math.cos(angle) * speed,
-                    vy: Math.sin(angle) * speed,
-                    vz: Math.random() * 30 + 10,
-                    size: Math.random() * 4 + 2,
-                    color,
-                    life: 30
-                });
-            }
-        }
-        
-        // 게임 루프
-        let lastTime = 0;
-        let enemySpawnTimer = 0;
-        
-        function gameLoop(timestamp) {
-            if (!game.running) return;
-            
-            const deltaTime = Math.min((timestamp - lastTime) / 1000, 0.1);
-            lastTime = timestamp;
-            
-            if (!game.paused) {
-                game.time += deltaTime;
-                
-                // 플레이어는 움직이지 않음 (중앙 고정)
-                
-                // 무기 발사
-                game.weapons.forEach(weapon => {
-                    const weaponData = weaponTypes[weapon.type];
-                    if (timestamp - weapon.lastShot > weaponData.cooldown) {
-                        weaponData.shoot(game.player);
-                        weapon.lastShot = timestamp;
-                    }
-                });
-                
-                // 발사체 업데이트
-                game.projectiles = game.projectiles.filter(proj => {
-                    // 수명 체크 (화염방사기)
-                    if (proj.life !== undefined) {
-                        proj.life--;
-                        if (proj.life <= 0) return false;
-                    }
-                    
-                    // 폭탄 중력
-                    if (proj.type === 'bomb' && proj.vz !== undefined) {
-                        proj.z += proj.vz * deltaTime;
-                        proj.vz -= 200 * deltaTime;
-                        if (proj.z <= 0) {
-                            // 폭발!
-                            proj.z = 0;
-                            game.enemies.forEach(enemy => {
-                                const dist = Math.hypot(enemy.x - proj.x, enemy.y - proj.y);
-                                if (dist < proj.radius) {
-                                    enemy.hp -= proj.damage * (1 + (weaponTypes.damage.level * 0.1));
-                                    createParticles(enemy.x, enemy.y, 0, '#ff6600', 10);
-                                }
-                            });
-                            createParticles(proj.x, proj.y, 0, '#ff0000', 40);
-                            return false;
-                        }
-                    }
-                    
-                    // 유도 미사일
-                    if (proj.type === 'missile' && proj.target) {
-                        const dx = proj.target.x - proj.x;
-                        const dy = proj.target.y - proj.y;
-                        const dist = Math.sqrt(dx*dx + dy*dy);
-                        if (dist > 1) {
-                            proj.vx = (dx/dist) * proj.speed;
-                            proj.vy = (dy/dist) * proj.speed;
-                        }
-                    }
-                    
-                    proj.x += proj.vx * deltaTime;
-                    proj.y += proj.vy * deltaTime;
-                    
-                    const distFromPlayer = Math.hypot(proj.x, proj.y);
-                    return distFromPlayer < 1500;
-                });
-                
-                // 적 업데이트
-                game.enemies.forEach(enemy => {
-                    const dx = -enemy.x;
-                    const dy = -enemy.y;
-                    const dist = Math.sqrt(dx*dx + dy*dy);
-                    
-                    if (dist > 1) {
-                        enemy.x += (dx/dist) * enemy.speed * deltaTime;
-                        enemy.y += (dy/dist) * enemy.speed * deltaTime;
-                    }
-                    
-                    // 플레이어 충돌
-                    if (dist < game.player.size + enemy.size) {
-                        game.player.hp -= enemy.damage;
-                        createParticles(enemy.x, enemy.y, 0, '#ff0000', 5);
-                        enemy.hp = 0;
-                        
-                        if (game.player.hp <= 0) {
-                            gameOver();
-                        }
-                    }
-                });
-                
-                // 발사체-적 충돌
-                game.projectiles.forEach(proj => {
-                    if (proj.type === 'bomb') return; // 폭탄은 땅에 닿아야 폭발
-                    
-                    game.enemies.forEach(enemy => {
-                        const dx = proj.x - enemy.x;
-                        const dy = proj.y - enemy.y;
-                        const dist = Math.sqrt(dx*dx + dy*dy);
-                        
-                        if (dist < proj.size + enemy.size) {
-                            const totalDamage = proj.damage * (1 + (weaponTypes.damage.level * 0.1));
-                            enemy.hp -= totalDamage;
-                            createParticles(enemy.x, enemy.y, 0, proj.color);
-                            
-                            // 관통 처리
-                            if (proj.pierce) {
-                                proj.pierce--;
-                                if (proj.pierce <= 0) proj.x = -99999;
-                            } else {
-                                proj.x = -99999;
-                            }
-                            
-                            if (enemy.hp <= 0) {
-                                game.kills++;
-                                game.player.exp += 10;
-                                createParticles(enemy.x, enemy.y, 0, '#ffff00', 20);
-                                
-                                if (game.player.exp >= game.player.expToNext) {
-                                    game.player.level++;
-                                    game.player.exp -= game.player.expToNext;
-                                    game.player.expToNext = Math.floor(game.player.expToNext * 1.2);
-                                    showLevelUp();
-                                }
-                            }
-                        }
-                    });
-                });
-                
-                game.enemies = game.enemies.filter(e => e.hp > 0);
-                
-                // 파티클 업데이트
-                game.particles = game.particles.filter(p => {
-                    p.x += p.vx * deltaTime;
-                    p.y += p.vy * deltaTime;
-                    if (p.vz) {
-                        p.z += p.vz * deltaTime;
-                        p.vz -= 200 * deltaTime;
-                        if (p.z < 0) {
-                            p.z = 0;
-                            p.vz = 0;
-                        }
-                    }
-                    p.life--;
-                    return p.life > 0;
-                });
-                
-                // 적 생성
-                const spawnRate = Math.max(300 - game.time * 8, 100);
-                enemySpawnTimer += deltaTime * 1000;
-                if (enemySpawnTimer > spawnRate) {
-                    spawnEnemy();
-                    enemySpawnTimer = 0;
-                }
-            }
-            
-            // 렌더링
-            ctx.fillStyle = '#1a1a2e';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // 그리드
-            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-            ctx.lineWidth = 1;
-            const gridSize = 100;
-            for (let gx = -10; gx < 10; gx++) {
-                for (let gy = -10; gy < 10; gy++) {
-                    const worldX = gx * gridSize;
-                    const worldY = gy * gridSize;
-                    const screenPos = iso.toScreen(worldX, worldY);
-                    const x = canvas.width / 2 + screenPos.x;
-                    const y = canvas.height / 2 + screenPos.y;
-                    
-                    const tileSize = 50;
-                    ctx.fillStyle = ((gx + gy) % 2 === 0) ? 'rgba(50,50,70,0.3)' : 'rgba(30,30,50,0.3)';
-                    ctx.beginPath();
-                    ctx.moveTo(x, y);
-                    ctx.lineTo(x + tileSize, y + tileSize * 0.5);
-                    ctx.lineTo(x, y + tileSize);
-                    ctx.lineTo(x - tileSize, y + tileSize * 0.5);
-                    ctx.closePath();
-                    ctx.fill();
-                    ctx.stroke();
-                }
-            }
-            
-            // 렌더 리스트
-            const renderList = [];
-            
-            // 파티클
-            game.particles.forEach(p => {
-                const screenPos = iso.toScreen(p.x, p.y);
-                renderList.push({
-                    y: p.y,
-                    render: () => {
-                        const x = canvas.width / 2 + screenPos.x;
-                        const y = canvas.height / 2 + screenPos.y - p.z * 0.5;
-                        ctx.fillStyle = p.color;
-                        ctx.globalAlpha = p.life / 30;
-                        ctx.fillRect(x - p.size/2, y - p.size/2, p.size, p.size);
-                        ctx.globalAlpha = 1;
-                    }
-                });
-            });
-            
-            // 발사체
-            game.projectiles.forEach(proj => {
-                const screenPos = iso.toScreen(proj.x, proj.y);
-                renderList.push({
-                    y: proj.y,
-                    render: () => {
-                        const x = canvas.width / 2 + screenPos.x;
-                        const y = canvas.height / 2 + screenPos.y - (proj.z || 10) * 0.5;
-                        
-                        ctx.fillStyle = proj.color;
-                        ctx.shadowColor = proj.color;
-                        ctx.shadowBlur = 10;
-                        ctx.beginPath();
-                        ctx.arc(x, y, proj.size, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.shadowBlur = 0;
-                    }
-                });
-            });
-            
-            // 적
-            game.enemies.forEach(enemy => {
-                const screenPos = iso.toScreen(enemy.x, enemy.y);
-                renderList.push({
-                    y: enemy.y,
-                    render: () => {
-                        const x = canvas.width / 2 + screenPos.x;
-                        const y = canvas.height / 2 + screenPos.y;
-                        
-                        // 그림자
-                        ctx.fillStyle = 'rgba(0,0,0,0.4)';
-                        ctx.beginPath();
-                        ctx.ellipse(x, y + 5, 15, 8, 0, 0, Math.PI * 2);
-                        ctx.fill();
-                        
-                        // 적
-                        ctx.fillStyle = enemy.color;
-                        ctx.strokeStyle = '#aa0000';
-                        ctx.lineWidth = 2;
-                        ctx.beginPath();
-                        ctx.arc(x, y - 5, enemy.size, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.stroke();
-                        
-                        // HP 바
-                        const ehpBarWidth = 30;
-                        const ehpPercent = enemy.hp / enemy.maxHp;
-                        ctx.fillStyle = '#333';
-                        ctx.fillRect(x - ehpBarWidth/2, y - enemy.size - 15, ehpBarWidth, 3);
-                        ctx.fillStyle = '#ff0000';
-                        ctx.fillRect(x - ehpBarWidth/2, y - enemy.size - 15, ehpBarWidth * ehpPercent, 3);
-                    }
-                });
-            });
-            
-            // 플레이어 (항상 중앙)
-            renderList.push({
-                y: 0,
-                render: () => {
-                    const x = canvas.width / 2;
-                    const y = canvas.height / 2;
-                    
-                    // 그림자
-                    ctx.fillStyle = 'rgba(0,0,0,0.4)';
-                    ctx.beginPath();
-                    ctx.ellipse(x, y + 8, 20, 10, 0, 0, Math.PI * 2);
-                    ctx.fill();
-                    
-                    // 플레이어
-                    ctx.save();
-                    ctx.translate(x, y - 5);
-                    
-                    ctx.fillStyle = '#00ffff';
-                    ctx.strokeStyle = '#00aaaa';
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.moveTo(0, -20);
-                    ctx.lineTo(-15, 10);
-                    ctx.lineTo(0, 5);
-                    ctx.lineTo(15, 10);
-                    ctx.closePath();
-                    ctx.fill();
-                    ctx.stroke();
-                    
-                    // 엔진
-                    ctx.fillStyle = '#ff6600';
-                    ctx.beginPath();
-                    ctx.arc(-5, 10, 3, 0, Math.PI * 2);
-                    ctx.arc(5, 10, 3, 0, Math.PI * 2);
-                    ctx.fill();
-                    
-                    ctx.restore();
-                    
-                    // HP 바
-                    const hpBarWidth = 40;
-                    const hpPercent = game.player.hp / game.player.maxHp;
-                    ctx.fillStyle = '#333';
-                    ctx.fillRect(x - hpBarWidth/2, y - 35, hpBarWidth, 4);
-                    ctx.fillStyle = hpPercent > 0.3 ? '#00ff00' : '#ff0000';
-                    ctx.fillRect(x - hpBarWidth/2, y - 35, hpBarWidth * hpPercent, 4);
-                }
-            });
-            
-            // Y 정렬 후 렌더
-            renderList.sort((a, b) => a.y - b.y);
-            renderList.forEach(obj => obj.render());
-            
-            // UI 업데이트
+
+        function updateUI() {
             document.getElementById('hpText').textContent = `${Math.ceil(game.player.hp)}/${game.player.maxHp}`;
             document.getElementById('hpBar').style.width = (game.player.hp / game.player.maxHp * 100) + '%';
             document.getElementById('expText').textContent = `${game.player.exp}/${game.player.expToNext}`;
@@ -953,10 +987,8 @@
             const seconds = Math.floor(game.time % 60);
             document.getElementById('timeText').textContent = 
                 `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            
-            requestAnimationFrame(gameLoop);
         }
-        
+
         function gameOver() {
             game.running = false;
             const minutes = Math.floor(game.time / 60);
@@ -967,14 +999,9 @@
             document.getElementById('finalLevel').textContent = game.player.level;
             document.getElementById('gameOver').style.display = 'block';
         }
-        
-        // 시작
-        requestAnimationFrame(gameLoop);
-        
-        // 화면 크기 조정
+
         window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            phaserGame.scale.resize(window.innerWidth, window.innerHeight);
         });
     </script>
 </body>
