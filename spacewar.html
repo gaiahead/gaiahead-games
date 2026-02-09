@@ -3,109 +3,191 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Space War - Raptor Style</title>
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
+    <title>Space Survivors - 우주 서바이버</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
             font-family: 'Malgun Gothic', sans-serif;
-            background: #000; color: #fff; overflow: hidden;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+        }
+        
+        #gameCanvas {
+            display: block;
+            background: #1a1a2e;
             image-rendering: pixelated;
-            image-rendering: crisp-edges;
         }
+        
         #ui {
-            position: fixed; top: 0; left: 0; width: 100%;
-            padding: 20px; pointer-events: none; z-index: 10;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            pointer-events: none;
+            z-index: 10;
         }
+        
         .stat-bar {
-            background: rgba(0,0,0,0.8); border: 2px solid #00ffff;
-            border-radius: 10px; padding: 10px;
-            display: inline-block; margin-right: 20px;
-            box-shadow: 0 0 15px rgba(0,255,255,0.3);
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 10px;
+            display: inline-block;
+            margin-right: 20px;
         }
-        .stat-label { color: #00ffff; font-size: 14px; margin-bottom: 5px; }
+        
+        .stat-label {
+            color: #00ffff;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
         .bar {
-            width: 200px; height: 20px; background: #333;
-            border-radius: 5px; overflow: hidden; border: 1px solid #666;
+            width: 200px;
+            height: 20px;
+            background: #333;
+            border-radius: 5px;
+            overflow: hidden;
+            border: 1px solid #666;
         }
+        
         .bar-fill {
-            height: 100%; transition: width 0.3s;
+            height: 100%;
             background: linear-gradient(90deg, #00ff00, #00cc00);
-            box-shadow: 0 0 10px rgba(0,255,0,0.5);
+            transition: width 0.3s;
         }
+        
         .exp-bar .bar-fill {
             background: linear-gradient(90deg, #ffff00, #ff9900);
-            box-shadow: 0 0 10px rgba(255,255,0,0.5);
         }
+        
         #levelUpModal {
-            position: fixed; top: 50%; left: 50%;
+            position: fixed;
+            top: 50%;
+            left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.95); border: 3px solid #00ffff;
-            border-radius: 15px; padding: 30px; display: none;
-            z-index: 100; max-width: 1000px; pointer-events: auto;
-            box-shadow: 0 0 40px rgba(0,255,255,0.6);
+            background: rgba(0,0,0,0.95);
+            border: 3px solid #00ffff;
+            border-radius: 15px;
+            padding: 30px;
+            display: none;
+            z-index: 100;
+            max-width: 1000px;
+            pointer-events: auto;
         }
+        
         .upgrade-grid {
-            display: grid; grid-template-columns: repeat(5, 1fr);
-            gap: 15px; margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-top: 20px;
         }
+        
         .upgrade-card {
             background: linear-gradient(135deg, #1a1a2e, #16213e);
-            border: 2px solid #00ffff; border-radius: 10px;
-            padding: 15px; cursor: pointer; transition: all 0.3s;
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
         }
+        
         .upgrade-card:hover {
-            transform: scale(1.05); border-color: #00ff00;
+            transform: scale(1.05);
+            border-color: #00ff00;
             box-shadow: 0 0 20px rgba(0,255,255,0.5);
         }
-        .upgrade-icon { font-size: 32px; margin-bottom: 8px; }
+        
+        .upgrade-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        
         .upgrade-name {
-            color: #00ffff; font-size: 15px;
-            font-weight: bold; margin-bottom: 8px;
+            color: #00ffff;
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 8px;
         }
-        .upgrade-desc { color: #aaa; font-size: 12px; }
-        .level-display { color: #ffff00; font-size: 13px; margin-top: 8px; }
+        
+        .upgrade-desc {
+            color: #aaa;
+            font-size: 12px;
+        }
+        
+        .level-display {
+            color: #ffff00;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+        
         #gameOver {
-            position: fixed; top: 50%; left: 50%;
+            position: fixed;
+            top: 50%;
+            left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.95); border: 3px solid #ff0000;
-            border-radius: 15px; padding: 40px; display: none;
-            z-index: 100; text-align: center;
-            box-shadow: 0 0 40px rgba(255,0,0,0.6);
+            background: rgba(0,0,0,0.95);
+            border: 3px solid #ff0000;
+            border-radius: 15px;
+            padding: 40px;
+            display: none;
+            z-index: 100;
+            text-align: center;
         }
+        
         .btn {
             background: linear-gradient(135deg, #00ffff, #0099ff);
-            border: none; color: #000; padding: 15px 30px;
-            font-size: 18px; font-weight: bold; border-radius: 10px;
-            cursor: pointer; margin: 10px; transition: all 0.3s;
+            border: none;
+            color: #000;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
         }
+        
         .btn:hover {
             transform: scale(1.1);
             box-shadow: 0 0 20px rgba(0,255,255,0.8);
         }
+        
         #stats {
-            position: fixed; top: 80px; left: 20px;
-            background: rgba(0,0,0,0.8); border: 2px solid #00ffff;
-            border-radius: 10px; padding: 15px; font-size: 14px; color: #0ff;
-            box-shadow: 0 0 15px rgba(0,255,255,0.3);
-        }
-        canvas {
-            image-rendering: pixelated !important;
-            image-rendering: crisp-edges !important;
+            position: fixed;
+            top: 80px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 14px;
+            color: #0ff;
         }
     </style>
 </head>
 <body>
-    <div id="game-container"></div>
+    <canvas id="gameCanvas"></canvas>
     
     <div id="ui">
         <div class="stat-bar">
             <div class="stat-label">HP: <span id="hpText">150/150</span></div>
-            <div class="bar"><div class="bar-fill" id="hpBar" style="width: 100%"></div></div>
+            <div class="bar">
+                <div class="bar-fill" id="hpBar" style="width: 100%"></div>
+            </div>
         </div>
         <div class="stat-bar exp-bar">
             <div class="stat-label">경험치: <span id="expText">0/100</span></div>
-            <div class="bar"><div class="bar-fill" id="expBar" style="width: 0%"></div></div>
+            <div class="bar">
+                <div class="bar-fill" id="expBar" style="width: 0%"></div>
+            </div>
         </div>
     </div>
     
@@ -116,7 +198,7 @@
     </div>
     
     <div id="levelUpModal">
-        <h2 style="color: #00ffff; text-align: center; margin-bottom: 20px;">⬆️ 레벨 UP! 업그레이드 선택</h2>
+        <h2 style="color: #00ffff; text-align: center; margin-bottom: 20px;">⬆️ 레벨 업! 업그레이드 선택</h2>
         <div class="upgrade-grid" id="upgradeOptions"></div>
     </div>
     
@@ -131,576 +213,351 @@
     </div>
 
     <script>
-        // === Phaser Scene ===
-        class GameScene extends Phaser.Scene {
-            constructor() {
-                super('GameScene');
-            }
-
-            preload() {
-                // 픽셀 아트 스타일 텍스처 생성
-                this.createPlayerTexture();
-                this.createEnemyTextures();
-                this.createProjectileTextures();
-                this.createExplosionTextures();
-            }
-
-            createPlayerTexture() {
-                // Raptor 스타일 전투기
-                const g = this.add.graphics();
-                
-                // 선체 (금속 그라데이션)
-                g.fillStyle(0x2a4a7a);
-                g.fillRect(16, 2, 8, 36);
-                
-                // 하이라이트
-                g.fillStyle(0x4a7abc);
-                g.fillRect(17, 3, 2, 34);
-                
-                // 어두운 부분
-                g.fillStyle(0x1a2a4a);
-                g.fillRect(22, 3, 2, 34);
-                
-                // 날개
-                g.fillStyle(0x3a5a8a);
-                g.fillTriangle(4, 20, 16, 15, 16, 25);
-                g.fillTriangle(24, 15, 36, 20, 24, 25);
-                
-                // 날개 하이라이트
-                g.fillStyle(0x5a8aca);
-                g.fillTriangle(6, 20, 16, 16, 16, 24);
-                g.fillTriangle(24, 16, 34, 20, 24, 24);
-                
-                // 조종석 (유리)
-                g.fillStyle(0x6ac8ff);
-                g.fillRect(18, 6, 4, 6);
-                g.fillStyle(0x4aa8df);
-                g.fillRect(18, 6, 2, 6);
-                
-                // 엔진 (빨강)
-                g.fillStyle(0xff4400);
-                g.fillRect(16, 32, 3, 4);
-                g.fillRect(21, 32, 3, 4);
-                
-                // 엔진 하이라이트
-                g.fillStyle(0xff8844);
-                g.fillRect(16, 32, 1, 4);
-                g.fillRect(21, 32, 1, 4);
-                
-                // 무기 포트
-                g.fillStyle(0x8a8a8a);
-                g.fillRect(12, 18, 2, 4);
-                g.fillRect(26, 18, 2, 4);
-                
-                g.generateTexture('player', 40, 40);
-                g.destroy();
-            }
-
-            createEnemyTextures() {
-                // 적 타입 1: 전투기
-                let g = this.add.graphics();
-                g.fillStyle(0xff3333);
-                g.fillRect(12, 4, 16, 24);
-                g.fillStyle(0xaa0000);
-                g.fillRect(14, 6, 12, 20);
-                g.fillStyle(0xff6666);
-                g.fillRect(13, 5, 2, 22);
-                // 날개
-                g.fillStyle(0xcc2222);
-                g.fillTriangle(4, 16, 12, 12, 12, 20);
-                g.fillTriangle(28, 12, 36, 16, 28, 20);
-                g.generateTexture('enemy1', 40, 32);
-                g.destroy();
-                
-                // 적 타입 2: 중형
-                g = this.add.graphics();
-                g.fillStyle(0xff6600);
-                g.fillRect(10, 6, 20, 20);
-                g.fillStyle(0xaa4400);
-                g.fillRect(12, 8, 16, 16);
-                g.fillStyle(0xff9944);
-                g.fillRect(11, 7, 3, 18);
-                g.fillRect(8, 12, 4, 8);
-                g.fillRect(28, 12, 4, 8);
-                g.generateTexture('enemy2', 40, 32);
-                g.destroy();
-                
-                // 적 타입 3: 대형
-                g = this.add.graphics();
-                g.fillStyle(0xaa00aa);
-                g.fillRect(8, 4, 24, 28);
-                g.fillStyle(0x660066);
-                g.fillRect(10, 6, 20, 24);
-                g.fillStyle(0xdd44dd);
-                g.fillRect(9, 5, 4, 26);
-                // 터렛
-                g.fillStyle(0xff00ff);
-                g.fillCircle(12, 12, 3);
-                g.fillCircle(28, 12, 3);
-                g.fillCircle(12, 24, 3);
-                g.fillCircle(28, 24, 3);
-                g.generateTexture('enemy3', 40, 36);
-                g.destroy();
-            }
-
-            createProjectileTextures() {
-                // 레이저
-                let g = this.add.graphics();
-                g.fillStyle(0x00ffff);
-                g.fillRect(0, 0, 2, 8);
-                g.fillStyle(0xffffff);
-                g.fillRect(0, 2, 2, 4);
-                g.generateTexture('laser', 2, 8);
-                g.destroy();
-                
-                // 미사일
-                g = this.add.graphics();
-                g.fillStyle(0xff6600);
-                g.fillRect(0, 0, 3, 10);
-                g.fillStyle(0xff9944);
-                g.fillRect(0, 0, 1, 10);
-                g.fillStyle(0xcccccc);
-                g.fillRect(0, 8, 3, 2);
-                g.generateTexture('missile', 3, 10);
-                g.destroy();
-                
-                // 플라즈마
-                g = this.add.graphics();
-                g.fillStyle(0xff00ff);
-                g.fillCircle(6, 6, 6);
-                g.fillStyle(0xff88ff);
-                g.fillCircle(6, 6, 4);
-                g.fillStyle(0xffffff);
-                g.fillCircle(6, 6, 2);
-                g.generateTexture('plasma', 12, 12);
-                g.destroy();
-            }
-
-            createExplosionTextures() {
-                // 폭발 프레임 (4개)
-                for (let i = 0; i < 4; i++) {
-                    const g = this.add.graphics();
-                    const size = 8 + i * 8;
-                    const alpha = 1 - i * 0.2;
-                    
-                    g.fillStyle(0xff6600, alpha);
-                    g.fillCircle(16, 16, size);
-                    g.fillStyle(0xffaa44, alpha * 0.8);
-                    g.fillCircle(16, 16, size * 0.7);
-                    g.fillStyle(0xffff88, alpha * 0.6);
-                    g.fillCircle(16, 16, size * 0.4);
-                    
-                    g.generateTexture('explosion' + i, 32, 32);
-                    g.destroy();
-                }
-            }
-
-            create() {
-                this.initGame();
-                
-                // 배경 (스크롤 별)
-                this.stars = [];
-                for (let i = 0; i < 200; i++) {
-                    const star = this.add.circle(
-                        Phaser.Math.Between(0, config.width),
-                        Phaser.Math.Between(0, config.height),
-                        Phaser.Math.Between(1, 2),
-                        0xffffff,
-                        Phaser.Math.FloatBetween(0.3, 0.8)
-                    );
-                    star.setData('speed', Phaser.Math.Between(20, 100));
-                    this.stars.push(star);
-                }
-                
-                // 플레이어
-                this.player = this.add.sprite(config.width / 2, config.height / 2, 'player');
-                this.player.setScale(1.5);
-                
-                // 엔진 파티클
-                this.engineFire = this.add.particles(0, 0, 'particle', {
-                    speed: { min: 50, max: 100 },
-                    scale: { start: 0.4, end: 0 },
-                    tint: [0xff4400, 0xff8844, 0xffaa44],
-                    lifespan: 200,
-                    frequency: 20,
-                    x: config.width / 2,
-                    y: config.height / 2 + 30
-                });
-                
-                this.enemies = this.add.group();
-                this.projectiles = this.add.group();
-                this.explosions = this.add.group();
-                
-                // 타이머
-                this.time.addEvent({
-                    delay: 1000,
-                    callback: () => {
-                        if (!this.gamePaused) {
-                            this.gameTime++;
-                            updateUI();
-                        }
-                    },
-                    loop: true
-                });
-                
-                this.spawnTimer = 0;
-            }
-
-            // 텍스처 생성 후 파티클용
-            preload() {
-                this.createPlayerTexture();
-                this.createEnemyTextures();
-                this.createProjectileTextures();
-                this.createExplosionTextures();
-                
-                // 파티클용
-                const g = this.add.graphics();
-                g.fillStyle(0xffffff);
-                g.fillCircle(4, 4, 4);
-                g.generateTexture('particle', 8, 8);
-                g.destroy();
-            }
-
-            initGame() {
-                this.gameRunning = true;
-                this.gamePaused = false;
-                this.gameTime = 0;
-                this.kills = 0;
-                
-                this.playerData = {
-                    hp: 150,
-                    maxHp: 150,
-                    level: 1,
-                    exp: 0,
-                    expToNext: 100
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        // 쿼터뷰 변환
+        const iso = {
+            toScreen: function(worldX, worldY) {
+                const rotX = (worldX - worldY) * 0.707;
+                const rotY = (worldX + worldY) * 0.707;
+                return {
+                    x: rotX,
+                    y: rotY * 0.5
                 };
-                
-                this.weapons = [{ type: 'laser', lastShot: 0 }];
-                this.weaponTypes = createWeaponTypes(this);
             }
-
-            update(time, delta) {
-                if (!this.gameRunning || this.gamePaused) return;
-                
-                const deltaTime = delta / 1000;
-                
-                // 별 스크롤
-                this.stars.forEach(star => {
-                    star.y += star.getData('speed') * deltaTime;
-                    if (star.y > config.height) {
-                        star.y = 0;
-                        star.x = Phaser.Math.Between(0, config.width);
+        };
+        
+        // 게임 상태
+        const game = {
+            running: true,
+            paused: false,
+            time: 0,
+            kills: 0,
+            camera: {
+                x: 0,
+                y: 0
+            },
+            player: {
+                x: 0,
+                y: 0,
+                size: 20,
+                hp: 150,
+                maxHp: 150,
+                level: 1,
+                exp: 0,
+                expToNext: 100
+            },
+            weapons: [
+                { type: 'laser', lastShot: 0 }
+            ],
+            enemies: [],
+            projectiles: [],
+            particles: []
+        };
+        
+        // 무기 정의 (대폭 확장!)
+        const weaponTypes = {
+            laser: {
+                name: '레이저 포',
+                icon: '🔫',
+                desc: '전방위 레이저',
+                damage: 10,
+                cooldown: 250,
+                level: 1,
+                maxLevel: 8,
+                shoot: function(player) {
+                    const count = 2 + this.level;
+                    for (let i = 0; i < count; i++) {
+                        const angle = Math.random() * Math.PI * 2;
+                        game.projectiles.push({
+                            x: player.x,
+                            y: player.y,
+                            z: 10,
+                            vx: Math.cos(angle) * 200,
+                            vy: Math.sin(angle) * 200,
+                            size: 6,
+                            damage: this.damage * (1 + this.level * 0.5),
+                            color: '#00ffff',
+                            type: 'laser'
+                        });
                     }
-                });
-                
-                // 무기 발사
-                this.weapons.forEach(weapon => {
-                    const wData = this.weaponTypes[weapon.type];
-                    if (wData.shoot && time - weapon.lastShot > wData.cooldown) {
-                        wData.shoot(this, time);
-                        weapon.lastShot = time;
+                }
+            },
+            missile: {
+                name: '유도 미사일',
+                icon: '🚀',
+                desc: '적 추적 미사일',
+                damage: 25,
+                cooldown: 1000,
+                level: 0,
+                maxLevel: 6,
+                shoot: function(player) {
+                    if (game.enemies.length === 0) return;
+                    const count = 1 + Math.floor(this.level / 2);
+                    for (let i = 0; i < count; i++) {
+                        const target = game.enemies[i % game.enemies.length];
+                        game.projectiles.push({
+                            x: player.x,
+                            y: player.y,
+                            z: 15,
+                            vx: 0,
+                            vy: 0,
+                            size: 8,
+                            damage: this.damage * (1 + this.level * 0.4),
+                            color: '#ff6600',
+                            type: 'missile',
+                            target: target,
+                            speed: 150
+                        });
                     }
-                });
-                
-                // 발사체 업데이트
-                this.projectiles.getChildren().forEach(proj => {
-                    const data = proj.getData('data');
-                    
-                    if (data.life !== undefined) {
-                        data.life--;
-                        if (data.life <= 0) {
-                            proj.destroy();
-                            return;
-                        }
+                }
+            },
+            plasma: {
+                name: '플라즈마 볼',
+                icon: '💥',
+                desc: '방사형 플라즈마',
+                damage: 15,
+                cooldown: 800,
+                level: 0,
+                maxLevel: 6,
+                shoot: function(player) {
+                    const count = 4 + this.level * 2;
+                    for (let i = 0; i < count; i++) {
+                        const angle = (Math.PI * 2 / count) * i;
+                        game.projectiles.push({
+                            x: player.x,
+                            y: player.y,
+                            z: 12,
+                            vx: Math.cos(angle) * 180,
+                            vy: Math.sin(angle) * 180,
+                            size: 10,
+                            damage: this.damage * (1 + this.level * 0.3),
+                            color: '#ff00ff',
+                            type: 'plasma'
+                        });
                     }
+                }
+            },
+            lightning: {
+                name: '번개 체인',
+                icon: '⚡',
+                desc: '적 간 연쇄 공격',
+                damage: 20,
+                cooldown: 1500,
+                level: 0,
+                maxLevel: 6,
+                shoot: function(player) {
+                    if (game.enemies.length === 0) return;
+                    const chains = 2 + this.level;
+                    let current = game.enemies[0];
+                    const hit = new Set([current]);
                     
-                    // 유도 미사일
-                    if (data.type === 'missile' && data.target && data.target.active) {
-                        const angle = Phaser.Math.Angle.Between(
-                            proj.x, proj.y, data.target.x, data.target.y
-                        );
-                        proj.setVelocity(
-                            Math.cos(angle) * 300,
-                            Math.sin(angle) * 300
-                        );
-                        proj.setRotation(angle + Math.PI / 2);
-                    }
-                    
-                    // 화면 밖 제거
-                    if (proj.y < -50 || proj.y > config.height + 50 ||
-                        proj.x < -50 || proj.x > config.width + 50) {
-                        proj.destroy();
-                    }
-                });
-                
-                // 적 업데이트
-                this.enemies.getChildren().forEach(enemy => {
-                    const data = enemy.getData('data');
-                    
-                    // 플레이어 추적
-                    this.physics.moveToObject(enemy, this.player, data.speed);
-                    
-                    // 충돌 체크 (플레이어)
-                    const dist = Phaser.Math.Distance.Between(
-                        enemy.x, enemy.y, this.player.x, this.player.y
-                    );
-                    if (dist < 40) {
-                        this.playerData.hp -= data.damage;
-                        this.createExplosion(enemy.x, enemy.y);
-                        this.cameras.main.shake(100, 0.01);
-                        enemy.destroy();
+                    for (let i = 0; i < chains && current; i++) {
+                        current.hp -= this.damage * (1 + this.level * 0.5);
+                        createParticles(current.x, current.y, 0, '#ffff00', 15);
                         
-                        if (this.playerData.hp <= 0) {
-                            this.gameOver();
-                        }
-                    }
-                    
-                    // 충돌 체크 (발사체)
-                    this.projectiles.getChildren().forEach(proj => {
-                        const pdist = Phaser.Math.Distance.Between(
-                            proj.x, proj.y, enemy.x, enemy.y
-                        );
-                        if (pdist < 25) {
-                            const projData = proj.getData('data');
-                            const damage = projData.damage * (1 + this.weaponTypes.damage.level * 0.1);
-                            data.hp -= damage;
-                            
-                            this.createHitEffect(enemy.x, enemy.y);
-                            proj.destroy();
-                            
-                            if (data.hp <= 0) {
-                                this.kills++;
-                                this.createExplosion(enemy.x, enemy.y);
-                                enemy.destroy();
-                                
-                                this.playerData.exp += 10;
-                                if (this.playerData.exp >= this.playerData.expToNext) {
-                                    this.levelUp();
-                                }
+                        // 다음 타겟 찾기
+                        let next = null;
+                        let minDist = 300;
+                        for (const enemy of game.enemies) {
+                            if (hit.has(enemy)) continue;
+                            const dist = Math.hypot(enemy.x - current.x, enemy.y - current.y);
+                            if (dist < minDist) {
+                                minDist = dist;
+                                next = enemy;
                             }
                         }
-                    });
-                });
-                
-                // 적 스폰
-                const spawnRate = Math.max(300 - this.gameTime * 8, 100);
-                this.spawnTimer += delta;
-                if (this.spawnTimer > spawnRate) {
-                    this.spawnEnemy();
-                    this.spawnTimer = 0;
+                        if (next) hit.add(next);
+                        current = next;
+                    }
                 }
-                
-                updateUI();
-            }
-
-            spawnEnemy() {
-                const side = Phaser.Math.Between(0, 3);
-                let x, y;
-                
-                switch(side) {
-                    case 0: x = Phaser.Math.Between(0, config.width); y = -50; break;
-                    case 1: x = config.width + 50; y = Phaser.Math.Between(0, config.height); break;
-                    case 2: x = Phaser.Math.Between(0, config.width); y = config.height + 50; break;
-                    case 3: x = -50; y = Phaser.Math.Between(0, config.height); break;
-                }
-                
-                const difficulty = 1 + this.gameTime / 60;
-                const type = Phaser.Math.Between(0, 2);
-                const textures = ['enemy1', 'enemy2', 'enemy3'];
-                
-                const enemy = this.add.sprite(x, y, textures[type]);
-                this.physics.add.existing(enemy);
-                this.enemies.add(enemy);
-                
-                const hpMult = type === 0 ? 1 : type === 1 ? 1.5 : 2.5;
-                const speedMult = type === 0 ? 1.2 : type === 1 ? 1 : 0.7;
-                
-                enemy.setData('data', {
-                    hp: 25 * difficulty * hpMult,
-                    maxHp: 25 * difficulty * hpMult,
-                    speed: 80 * Math.min(difficulty, 2) * speedMult,
-                    damage: 3 + type
-                });
-            }
-
-            createExplosion(x, y) {
-                const explosion = this.add.sprite(x, y, 'explosion0');
-                explosion.setScale(1.5);
-                
-                const anim = this.tweens.createTimeline();
-                for (let i = 0; i < 4; i++) {
-                    anim.add({
-                        targets: explosion,
-                        duration: 50,
-                        onStart: () => explosion.setTexture('explosion' + i)
-                    });
-                }
-                anim.add({
-                    targets: explosion,
-                    alpha: 0,
-                    duration: 100,
-                    onComplete: () => explosion.destroy()
-                });
-                anim.play();
-            }
-
-            createHitEffect(x, y) {
-                const flash = this.add.circle(x, y, 10, 0xffffff, 0.8);
-                this.tweens.add({
-                    targets: flash,
-                    scale: 2,
-                    alpha: 0,
-                    duration: 150,
-                    onComplete: () => flash.destroy()
-                });
-            }
-
-            levelUp() {
-                this.playerData.level++;
-                this.playerData.exp -= this.playerData.expToNext;
-                this.playerData.expToNext = Math.floor(this.playerData.expToNext * 1.2);
-                this.gamePaused = true;
-                showLevelUp(this);
-            }
-
-            gameOver() {
-                this.gameRunning = false;
-                const minutes = Math.floor(this.gameTime / 60);
-                const seconds = this.gameTime % 60;
-                document.getElementById('finalTime').textContent = 
-                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                document.getElementById('finalKills').textContent = this.kills;
-                document.getElementById('finalLevel').textContent = this.playerData.level;
-                document.getElementById('gameOver').style.display = 'block';
-            }
-        }
-
-        const config = {
-            type: Phaser.WEBGL,
-            width: window.innerWidth,
-            height: window.innerHeight,
-            parent: 'game-container',
-            backgroundColor: '#0a0a1a',
-            pixelArt: true,
-            physics: {
-                default: 'arcade',
-                arcade: { gravity: { y: 0 }, debug: false }
             },
-            scene: GameScene
-        };
-
-        const phaserGame = new Phaser.Game(config);
-        let currentScene;
-
-        // 무기 시스템 (원래 로직 유지)
-        function createWeaponTypes(scene) {
-            return {
-                laser: {
-                    name: '레이저 포', icon: '🔫', desc: '전방위 레이저',
-                    damage: 10, cooldown: 250, level: 1, maxLevel: 8,
-                    shoot: (scene, time) => {
-                        const count = 2 + scene.weaponTypes.laser.level;
-                        for (let i = 0; i < count; i++) {
-                            const angle = Math.random() * Math.PI * 2;
-                            const proj = scene.add.sprite(scene.player.x, scene.player.y, 'laser');
-                            scene.physics.add.existing(proj);
-                            proj.body.setVelocity(
-                                Math.cos(angle) * 400,
-                                Math.sin(angle) * 400
-                            );
-                            proj.setRotation(angle);
-                            proj.setData('data', {
-                                damage: scene.weaponTypes.laser.damage * (1 + scene.weaponTypes.laser.level * 0.5),
-                                type: 'laser'
-                            });
-                            scene.projectiles.add(proj);
-                        }
+            flamethrower: {
+                name: '화염방사기',
+                icon: '🔥',
+                desc: '근거리 광역 화염',
+                damage: 8,
+                cooldown: 100,
+                level: 0,
+                maxLevel: 8,
+                shoot: function(player) {
+                    const count = 5 + this.level * 2;
+                    for (let i = 0; i < count; i++) {
+                        const angle = Math.random() * Math.PI * 2;
+                        const speed = 120 + Math.random() * 50;
+                        game.projectiles.push({
+                            x: player.x,
+                            y: player.y,
+                            z: 5,
+                            vx: Math.cos(angle) * speed,
+                            vy: Math.sin(angle) * speed,
+                            size: 8,
+                            damage: this.damage * (1 + this.level * 0.3),
+                            color: '#ff4500',
+                            type: 'flame',
+                            life: 20 + this.level * 5
+                        });
                     }
-                },
-                missile: {
-                    name: '유도 미사일', icon: '🚀', desc: '적 추적 미사일',
-                    damage: 25, cooldown: 1000, level: 0, maxLevel: 6,
-                    shoot: (scene, time) => {
-                        if (scene.enemies.getLength() === 0) return;
-                        const count = 1 + Math.floor(scene.weaponTypes.missile.level / 2);
-                        const enemies = scene.enemies.getChildren();
-                        for (let i = 0; i < Math.min(count, enemies.length); i++) {
-                            const target = enemies[i];
-                            const proj = scene.add.sprite(scene.player.x, scene.player.y, 'missile');
-                            scene.physics.add.existing(proj);
-                            proj.setData('data', {
-                                damage: scene.weaponTypes.missile.damage * (1 + scene.weaponTypes.missile.level * 0.4),
-                                type: 'missile',
-                                target: target
-                            });
-                            scene.projectiles.add(proj);
-                        }
-                    }
-                },
-                plasma: {
-                    name: '플라즈마 볼', icon: '💥', desc: '방사형 플라즈마',
-                    damage: 15, cooldown: 800, level: 0, maxLevel: 6,
-                    shoot: (scene, time) => {
-                        const count = 4 + scene.weaponTypes.plasma.level * 2;
-                        for (let i = 0; i < count; i++) {
-                            const angle = (Math.PI * 2 / count) * i;
-                            const proj = scene.add.sprite(scene.player.x, scene.player.y, 'plasma');
-                            scene.physics.add.existing(proj);
-                            proj.body.setVelocity(
-                                Math.cos(angle) * 300,
-                                Math.sin(angle) * 300
-                            );
-                            proj.setData('data', {
-                                damage: scene.weaponTypes.plasma.damage * (1 + scene.weaponTypes.plasma.level * 0.3),
-                                type: 'plasma'
-                            });
-                            scene.projectiles.add(proj);
-                        }
-                    }
-                },
-                shield: {
-                    name: '에너지 실드', icon: '🛡️', desc: '최대 체력 +30',
-                    level: 0, maxLevel: 8,
-                    apply: (scene) => {
-                        scene.playerData.maxHp += 30;
-                        scene.playerData.hp = Math.min(scene.playerData.hp + 30, scene.playerData.maxHp);
-                    }
-                },
-                regen: {
-                    name: '재생', icon: '💚', desc: '체력 회복 +20',
-                    level: 0, maxLevel: 10,
-                    apply: (scene) => {
-                        scene.playerData.hp = Math.min(scene.playerData.hp + 20, scene.playerData.maxHp);
-                    }
-                },
-                damage: {
-                    name: '화력 증강', icon: '💪', desc: '모든 무기 +10%',
-                    level: 0, maxLevel: 15,
-                    apply: (scene) => {}
                 }
-            };
-        }
-
-        function showLevelUp(scene) {
-            if (!currentScene) currentScene = scene;
+            },
+            railgun: {
+                name: '레일건',
+                icon: '🎯',
+                desc: '고위력 관통 빔',
+                damage: 50,
+                cooldown: 2000,
+                level: 0,
+                maxLevel: 5,
+                shoot: function(player) {
+                    if (game.enemies.length === 0) return;
+                    const target = game.enemies[0];
+                    const dx = target.x - player.x;
+                    const dy = target.y - player.y;
+                    const angle = Math.atan2(dy, dx);
+                    
+                    game.projectiles.push({
+                        x: player.x,
+                        y: player.y,
+                        z: 10,
+                        vx: Math.cos(angle) * 400,
+                        vy: Math.sin(angle) * 400,
+                        size: 12,
+                        damage: this.damage * (1 + this.level * 0.6),
+                        color: '#00ff88',
+                        type: 'railgun',
+                        pierce: 3 + this.level
+                    });
+                }
+            },
+            bomb: {
+                name: '폭탄',
+                icon: '💣',
+                desc: '광역 폭발',
+                damage: 30,
+                cooldown: 3000,
+                level: 0,
+                maxLevel: 5,
+                shoot: function(player) {
+                    if (game.enemies.length === 0) return;
+                    const target = game.enemies[0];
+                    game.projectiles.push({
+                        x: player.x,
+                        y: player.y,
+                        z: 20,
+                        vx: (target.x - player.x) * 0.3,
+                        vy: (target.y - player.y) * 0.3,
+                        vz: 100,
+                        size: 10,
+                        damage: this.damage * (1 + this.level * 0.5),
+                        color: '#ff0000',
+                        type: 'bomb',
+                        radius: 100 + this.level * 20
+                    });
+                }
+            },
+            drone: {
+                name: '드론',
+                icon: '🛸',
+                desc: '자동 공격 드론',
+                damage: 12,
+                cooldown: 600,
+                level: 0,
+                maxLevel: 5,
+                shoot: function(player) {
+                    if (game.enemies.length === 0) return;
+                    const count = Math.min(1 + this.level, game.enemies.length);
+                    for (let i = 0; i < count; i++) {
+                        const target = game.enemies[i];
+                        const angle = Math.atan2(target.y - player.y, target.x - player.x);
+                        game.projectiles.push({
+                            x: player.x,
+                            y: player.y,
+                            z: 15,
+                            vx: Math.cos(angle) * 180,
+                            vy: Math.sin(angle) * 180,
+                            size: 6,
+                            damage: this.damage * (1 + this.level * 0.4),
+                            color: '#00ccff',
+                            type: 'drone'
+                        });
+                    }
+                }
+            },
+            satellite: {
+                name: '위성 레이저',
+                icon: '🛰️',
+                desc: '궤도 레이저 공격',
+                damage: 40,
+                cooldown: 2500,
+                level: 0,
+                maxLevel: 5,
+                shoot: function(player) {
+                    if (game.enemies.length === 0) return;
+                    const count = 1 + Math.floor(this.level / 2);
+                    for (let i = 0; i < count; i++) {
+                        const target = game.enemies[i % game.enemies.length];
+                        // 즉시 타격
+                        target.hp -= this.damage * (1 + this.level * 0.5);
+                        createParticles(target.x, target.y, 0, '#00ffff', 20);
+                    }
+                }
+            },
+            shield: {
+                name: '에너지 실드',
+                icon: '🛡️',
+                desc: '최대 체력 +30',
+                level: 0,
+                maxLevel: 8,
+                apply: function() {
+                    game.player.maxHp += 30;
+                    game.player.hp = Math.min(game.player.hp + 30, game.player.maxHp);
+                }
+            },
+            regen: {
+                name: '재생',
+                icon: '💚',
+                desc: '체력 회복 +20',
+                level: 0,
+                maxLevel: 10,
+                apply: function() {
+                    game.player.hp = Math.min(game.player.hp + 20, game.player.maxHp);
+                }
+            },
+            damage: {
+                name: '화력 증강',
+                icon: '💪',
+                desc: '모든 무기 +10%',
+                level: 0,
+                maxLevel: 15,
+                apply: function() {}
+            }
+        };
+        
+        // 업그레이드 선택
+        function showLevelUp() {
+            game.paused = true;
             const modal = document.getElementById('levelUpModal');
             const options = document.getElementById('upgradeOptions');
             options.innerHTML = '';
             
-            const available = Object.keys(scene.weaponTypes).filter(k => {
-                const w = scene.weaponTypes[k];
+            const available = Object.keys(weaponTypes).filter(k => {
+                const w = weaponTypes[k];
                 return !w.maxLevel || w.level < w.maxLevel;
             });
             
             const selected = [];
-            while (selected.length < Math.min(5, available.length)) {
+            while (selected.length < 5 && available.length > 0) {
                 const idx = Math.floor(Math.random() * available.length);
                 selected.push(available[idx]);
                 available.splice(idx, 1);
             }
             
             selected.forEach(key => {
-                const weapon = scene.weaponTypes[key];
+                const weapon = weaponTypes[key];
                 const card = document.createElement('div');
                 card.className = 'upgrade-card';
                 card.innerHTML = `
@@ -709,48 +566,415 @@
                     <div class="upgrade-desc">${weapon.desc}</div>
                     <div class="level-display">Lv ${weapon.level} → ${weapon.level + 1}</div>
                 `;
-                card.onclick = () => selectUpgrade(scene, key);
+                card.onclick = () => selectUpgrade(key);
                 options.appendChild(card);
             });
             
             modal.style.display = 'block';
         }
-
-        function selectUpgrade(scene, key) {
-            const weapon = scene.weaponTypes[key];
+        
+        function selectUpgrade(key) {
+            const weapon = weaponTypes[key];
             weapon.level++;
             
-            if (weapon.shoot && !scene.weapons.find(w => w.type === key)) {
-                scene.weapons.push({ type: key, lastShot: 0 });
+            if (weapon.shoot && !game.weapons.find(w => w.type === key)) {
+                game.weapons.push({
+                    type: key,
+                    lastShot: 0
+                });
             }
             
             if (weapon.apply) {
-                weapon.apply(scene);
+                weapon.apply();
             }
             
             document.getElementById('levelUpModal').style.display = 'none';
-            scene.gamePaused = false;
+            game.paused = false;
         }
-
-        function updateUI() {
-            if (!currentScene) currentScene = phaserGame.scene.scenes[0];
-            const p = currentScene.playerData;
+        
+        // 적 생성
+        function spawnEnemy() {
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 600;
+            const x = Math.cos(angle) * distance;
+            const y = Math.sin(angle) * distance;
             
-            document.getElementById('hpText').textContent = `${Math.ceil(p.hp)}/${p.maxHp}`;
-            document.getElementById('hpBar').style.width = (p.hp / p.maxHp * 100) + '%';
-            document.getElementById('expText').textContent = `${p.exp}/${p.expToNext}`;
-            document.getElementById('expBar').style.width = (p.exp / p.expToNext * 100) + '%';
-            document.getElementById('levelText').textContent = p.level;
-            document.getElementById('killText').textContent = currentScene.kills;
+            const difficulty = 1 + game.time / 60;
             
-            const minutes = Math.floor(currentScene.gameTime / 60);
-            const seconds = currentScene.gameTime % 60;
+            game.enemies.push({
+                x, y,
+                size: 15,
+                hp: 25 * difficulty,
+                maxHp: 25 * difficulty,
+                speed: 80 * Math.min(difficulty, 2),
+                damage: 3,
+                color: '#ff0000'
+            });
+        }
+        
+        // 파티클 생성
+        function createParticles(x, y, z, color, count = 10) {
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 100 + 50;
+                game.particles.push({
+                    x, y, z: 10,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    vz: Math.random() * 30 + 10,
+                    size: Math.random() * 4 + 2,
+                    color,
+                    life: 30
+                });
+            }
+        }
+        
+        // 게임 루프
+        let lastTime = 0;
+        let enemySpawnTimer = 0;
+        
+        function gameLoop(timestamp) {
+            if (!game.running) return;
+            
+            const deltaTime = Math.min((timestamp - lastTime) / 1000, 0.1);
+            lastTime = timestamp;
+            
+            if (!game.paused) {
+                game.time += deltaTime;
+                
+                // 플레이어는 움직이지 않음 (중앙 고정)
+                
+                // 무기 발사
+                game.weapons.forEach(weapon => {
+                    const weaponData = weaponTypes[weapon.type];
+                    if (timestamp - weapon.lastShot > weaponData.cooldown) {
+                        weaponData.shoot(game.player);
+                        weapon.lastShot = timestamp;
+                    }
+                });
+                
+                // 발사체 업데이트
+                game.projectiles = game.projectiles.filter(proj => {
+                    // 수명 체크 (화염방사기)
+                    if (proj.life !== undefined) {
+                        proj.life--;
+                        if (proj.life <= 0) return false;
+                    }
+                    
+                    // 폭탄 중력
+                    if (proj.type === 'bomb' && proj.vz !== undefined) {
+                        proj.z += proj.vz * deltaTime;
+                        proj.vz -= 200 * deltaTime;
+                        if (proj.z <= 0) {
+                            // 폭발!
+                            proj.z = 0;
+                            game.enemies.forEach(enemy => {
+                                const dist = Math.hypot(enemy.x - proj.x, enemy.y - proj.y);
+                                if (dist < proj.radius) {
+                                    enemy.hp -= proj.damage * (1 + (weaponTypes.damage.level * 0.1));
+                                    createParticles(enemy.x, enemy.y, 0, '#ff6600', 10);
+                                }
+                            });
+                            createParticles(proj.x, proj.y, 0, '#ff0000', 40);
+                            return false;
+                        }
+                    }
+                    
+                    // 유도 미사일
+                    if (proj.type === 'missile' && proj.target) {
+                        const dx = proj.target.x - proj.x;
+                        const dy = proj.target.y - proj.y;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        if (dist > 1) {
+                            proj.vx = (dx/dist) * proj.speed;
+                            proj.vy = (dy/dist) * proj.speed;
+                        }
+                    }
+                    
+                    proj.x += proj.vx * deltaTime;
+                    proj.y += proj.vy * deltaTime;
+                    
+                    const distFromPlayer = Math.hypot(proj.x, proj.y);
+                    return distFromPlayer < 1500;
+                });
+                
+                // 적 업데이트
+                game.enemies.forEach(enemy => {
+                    const dx = -enemy.x;
+                    const dy = -enemy.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    
+                    if (dist > 1) {
+                        enemy.x += (dx/dist) * enemy.speed * deltaTime;
+                        enemy.y += (dy/dist) * enemy.speed * deltaTime;
+                    }
+                    
+                    // 플레이어 충돌
+                    if (dist < game.player.size + enemy.size) {
+                        game.player.hp -= enemy.damage;
+                        createParticles(enemy.x, enemy.y, 0, '#ff0000', 5);
+                        enemy.hp = 0;
+                        
+                        if (game.player.hp <= 0) {
+                            gameOver();
+                        }
+                    }
+                });
+                
+                // 발사체-적 충돌
+                game.projectiles.forEach(proj => {
+                    if (proj.type === 'bomb') return; // 폭탄은 땅에 닿아야 폭발
+                    
+                    game.enemies.forEach(enemy => {
+                        const dx = proj.x - enemy.x;
+                        const dy = proj.y - enemy.y;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        
+                        if (dist < proj.size + enemy.size) {
+                            const totalDamage = proj.damage * (1 + (weaponTypes.damage.level * 0.1));
+                            enemy.hp -= totalDamage;
+                            createParticles(enemy.x, enemy.y, 0, proj.color);
+                            
+                            // 관통 처리
+                            if (proj.pierce) {
+                                proj.pierce--;
+                                if (proj.pierce <= 0) proj.x = -99999;
+                            } else {
+                                proj.x = -99999;
+                            }
+                            
+                            if (enemy.hp <= 0) {
+                                game.kills++;
+                                game.player.exp += 10;
+                                createParticles(enemy.x, enemy.y, 0, '#ffff00', 20);
+                                
+                                if (game.player.exp >= game.player.expToNext) {
+                                    game.player.level++;
+                                    game.player.exp -= game.player.expToNext;
+                                    game.player.expToNext = Math.floor(game.player.expToNext * 1.2);
+                                    showLevelUp();
+                                }
+                            }
+                        }
+                    });
+                });
+                
+                game.enemies = game.enemies.filter(e => e.hp > 0);
+                
+                // 파티클 업데이트
+                game.particles = game.particles.filter(p => {
+                    p.x += p.vx * deltaTime;
+                    p.y += p.vy * deltaTime;
+                    if (p.vz) {
+                        p.z += p.vz * deltaTime;
+                        p.vz -= 200 * deltaTime;
+                        if (p.z < 0) {
+                            p.z = 0;
+                            p.vz = 0;
+                        }
+                    }
+                    p.life--;
+                    return p.life > 0;
+                });
+                
+                // 적 생성
+                const spawnRate = Math.max(300 - game.time * 8, 100);
+                enemySpawnTimer += deltaTime * 1000;
+                if (enemySpawnTimer > spawnRate) {
+                    spawnEnemy();
+                    enemySpawnTimer = 0;
+                }
+            }
+            
+            // 렌더링
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 그리드
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.lineWidth = 1;
+            const gridSize = 100;
+            for (let gx = -10; gx < 10; gx++) {
+                for (let gy = -10; gy < 10; gy++) {
+                    const worldX = gx * gridSize;
+                    const worldY = gy * gridSize;
+                    const screenPos = iso.toScreen(worldX, worldY);
+                    const x = canvas.width / 2 + screenPos.x;
+                    const y = canvas.height / 2 + screenPos.y;
+                    
+                    const tileSize = 50;
+                    ctx.fillStyle = ((gx + gy) % 2 === 0) ? 'rgba(50,50,70,0.3)' : 'rgba(30,30,50,0.3)';
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(x + tileSize, y + tileSize * 0.5);
+                    ctx.lineTo(x, y + tileSize);
+                    ctx.lineTo(x - tileSize, y + tileSize * 0.5);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                }
+            }
+            
+            // 렌더 리스트
+            const renderList = [];
+            
+            // 파티클
+            game.particles.forEach(p => {
+                const screenPos = iso.toScreen(p.x, p.y);
+                renderList.push({
+                    y: p.y,
+                    render: () => {
+                        const x = canvas.width / 2 + screenPos.x;
+                        const y = canvas.height / 2 + screenPos.y - p.z * 0.5;
+                        ctx.fillStyle = p.color;
+                        ctx.globalAlpha = p.life / 30;
+                        ctx.fillRect(x - p.size/2, y - p.size/2, p.size, p.size);
+                        ctx.globalAlpha = 1;
+                    }
+                });
+            });
+            
+            // 발사체
+            game.projectiles.forEach(proj => {
+                const screenPos = iso.toScreen(proj.x, proj.y);
+                renderList.push({
+                    y: proj.y,
+                    render: () => {
+                        const x = canvas.width / 2 + screenPos.x;
+                        const y = canvas.height / 2 + screenPos.y - (proj.z || 10) * 0.5;
+                        
+                        ctx.fillStyle = proj.color;
+                        ctx.shadowColor = proj.color;
+                        ctx.shadowBlur = 10;
+                        ctx.beginPath();
+                        ctx.arc(x, y, proj.size, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
+                    }
+                });
+            });
+            
+            // 적
+            game.enemies.forEach(enemy => {
+                const screenPos = iso.toScreen(enemy.x, enemy.y);
+                renderList.push({
+                    y: enemy.y,
+                    render: () => {
+                        const x = canvas.width / 2 + screenPos.x;
+                        const y = canvas.height / 2 + screenPos.y;
+                        
+                        // 그림자
+                        ctx.fillStyle = 'rgba(0,0,0,0.4)';
+                        ctx.beginPath();
+                        ctx.ellipse(x, y + 5, 15, 8, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // 적
+                        ctx.fillStyle = enemy.color;
+                        ctx.strokeStyle = '#aa0000';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.arc(x, y - 5, enemy.size, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+                        
+                        // HP 바
+                        const ehpBarWidth = 30;
+                        const ehpPercent = enemy.hp / enemy.maxHp;
+                        ctx.fillStyle = '#333';
+                        ctx.fillRect(x - ehpBarWidth/2, y - enemy.size - 15, ehpBarWidth, 3);
+                        ctx.fillStyle = '#ff0000';
+                        ctx.fillRect(x - ehpBarWidth/2, y - enemy.size - 15, ehpBarWidth * ehpPercent, 3);
+                    }
+                });
+            });
+            
+            // 플레이어 (항상 중앙)
+            renderList.push({
+                y: 0,
+                render: () => {
+                    const x = canvas.width / 2;
+                    const y = canvas.height / 2;
+                    
+                    // 그림자
+                    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+                    ctx.beginPath();
+                    ctx.ellipse(x, y + 8, 20, 10, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 플레이어
+                    ctx.save();
+                    ctx.translate(x, y - 5);
+                    
+                    ctx.fillStyle = '#00ffff';
+                    ctx.strokeStyle = '#00aaaa';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(0, -20);
+                    ctx.lineTo(-15, 10);
+                    ctx.lineTo(0, 5);
+                    ctx.lineTo(15, 10);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                    
+                    // 엔진
+                    ctx.fillStyle = '#ff6600';
+                    ctx.beginPath();
+                    ctx.arc(-5, 10, 3, 0, Math.PI * 2);
+                    ctx.arc(5, 10, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.restore();
+                    
+                    // HP 바
+                    const hpBarWidth = 40;
+                    const hpPercent = game.player.hp / game.player.maxHp;
+                    ctx.fillStyle = '#333';
+                    ctx.fillRect(x - hpBarWidth/2, y - 35, hpBarWidth, 4);
+                    ctx.fillStyle = hpPercent > 0.3 ? '#00ff00' : '#ff0000';
+                    ctx.fillRect(x - hpBarWidth/2, y - 35, hpBarWidth * hpPercent, 4);
+                }
+            });
+            
+            // Y 정렬 후 렌더
+            renderList.sort((a, b) => a.y - b.y);
+            renderList.forEach(obj => obj.render());
+            
+            // UI 업데이트
+            document.getElementById('hpText').textContent = `${Math.ceil(game.player.hp)}/${game.player.maxHp}`;
+            document.getElementById('hpBar').style.width = (game.player.hp / game.player.maxHp * 100) + '%';
+            document.getElementById('expText').textContent = `${game.player.exp}/${game.player.expToNext}`;
+            document.getElementById('expBar').style.width = (game.player.exp / game.player.expToNext * 100) + '%';
+            document.getElementById('levelText').textContent = game.player.level;
+            document.getElementById('killText').textContent = game.kills;
+            
+            const minutes = Math.floor(game.time / 60);
+            const seconds = Math.floor(game.time % 60);
             document.getElementById('timeText').textContent = 
                 `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            requestAnimationFrame(gameLoop);
         }
-
+        
+        function gameOver() {
+            game.running = false;
+            const minutes = Math.floor(game.time / 60);
+            const seconds = Math.floor(game.time % 60);
+            document.getElementById('finalTime').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('finalKills').textContent = game.kills;
+            document.getElementById('finalLevel').textContent = game.player.level;
+            document.getElementById('gameOver').style.display = 'block';
+        }
+        
+        // 시작
+        requestAnimationFrame(gameLoop);
+        
+        // 화면 크기 조정
         window.addEventListener('resize', () => {
-            phaserGame.scale.resize(window.innerWidth, window.innerHeight);
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
         });
     </script>
 </body>
