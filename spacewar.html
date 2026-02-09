@@ -519,11 +519,13 @@
                 this.playerData.exp -= this.playerData.expToNext;
                 this.playerData.expToNext = Math.floor(this.playerData.expToNext * 1.2);
                 this.gamePaused = true;
+                this.physics.pause(); // 물리 엔진 일시정지
                 showLevelUp(this);
             }
 
             gameOver() {
                 this.gameRunning = false;
+                this.physics.pause(); // 게임오버 시 물리 엔진 멈춤
                 const minutes = Math.floor(this.gameTime / 60);
                 const seconds = this.gameTime % 60;
                 document.getElementById('finalTime').textContent = 
@@ -679,6 +681,7 @@
             
             document.getElementById('levelUpModal').style.display = 'none';
             scene.gamePaused = false;
+            scene.physics.resume(); // 물리 엔진 재개
         }
 
         function updateUI() {
