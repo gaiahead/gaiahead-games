@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>만신전 (Pantheon)</title>
+    <title>만신전 (Pantheon League)</title>
     <style>
         * {
             margin: 0;
@@ -12,15 +12,15 @@
         }
         
         body {
-            font-family: 'Georgia', serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: #f0e6d2;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #fff;
             min-height: 100vh;
             padding: 20px;
         }
         
         .container {
-            max-width: 900px;
+            max-width: 1200px;
             margin: 0 auto;
         }
         
@@ -28,211 +28,229 @@
             text-align: center;
             margin-bottom: 30px;
             padding: 20px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            border: 2px solid #d4af37;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
         }
         
         h1 {
-            font-size: 2.5em;
-            color: #d4af37;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            font-size: 3em;
+            color: #ffd700;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
             margin-bottom: 10px;
         }
         
-        .subtitle {
-            font-size: 1.1em;
-            color: #c9b88c;
-            font-style: italic;
-        }
-        
-        /* 대시보드 */
-        .dashboard {
-            background: rgba(0, 0, 0, 0.4);
-            padding: 25px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #4a4a4a;
-        }
-        
-        .status-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            gap: 15px;
-        }
-        
-        .stat-box {
-            flex: 1;
-            background: rgba(212, 175, 55, 0.1);
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #d4af37;
-            text-align: center;
-        }
-        
-        .stat-label {
-            font-size: 0.9em;
-            color: #c9b88c;
-            margin-bottom: 5px;
-        }
-        
-        .stat-value {
-            font-size: 1.8em;
-            font-weight: bold;
-            color: #d4af37;
-        }
-        
-        /* 신들의 호감도 */
-        .gods-section {
-            margin-top: 25px;
-        }
-        
-        .gods-title {
+        .league-info {
             font-size: 1.3em;
-            color: #d4af37;
-            margin-bottom: 15px;
+            color: #00d4ff;
+        }
+        
+        /* 신 선택 화면 */
+        .god-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .god-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
             text-align: center;
         }
         
-        .god-item {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 12px;
-            border: 1px solid #3a3a3a;
+        .god-card:hover {
+            transform: translateY(-5px);
+            border-color: #ffd700;
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+        }
+        
+        .god-card.selected {
+            border-color: #00ff00;
+            background: linear-gradient(135deg, rgba(0, 255, 0, 0.2), rgba(0, 255, 0, 0.1));
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
         }
         
         .god-name {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 1.1em;
-        }
-        
-        .god-label {
-            color: #f0e6d2;
+            font-size: 1.3em;
             font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 10px;
         }
         
-        .god-value {
-            color: #d4af37;
+        .god-type {
+            font-size: 0.9em;
+            color: #aaa;
         }
         
-        .favor-bar-bg {
-            height: 12px;
+        /* 스킬 트리 */
+        .skill-tree-container {
             background: rgba(0, 0, 0, 0.5);
-            border-radius: 6px;
-            overflow: hidden;
-            border: 1px solid #3a3a3a;
-        }
-        
-        .favor-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #c9b88c 0%, #d4af37 100%);
-            transition: width 0.5s ease;
-            box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
-        }
-        
-        /* 이벤트 카드 */
-        .event-card {
-            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
             padding: 30px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border: 2px solid #d4af37;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+            border: 2px solid #ffd700;
         }
         
-        .event-title {
+        .skill-tree-title {
+            font-size: 2em;
+            color: #ffd700;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .skill-points {
+            text-align: center;
             font-size: 1.5em;
-            color: #d4af37;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        
-        .event-text {
-            font-size: 1.1em;
-            line-height: 1.6;
-            margin-bottom: 25px;
-            color: #f0e6d2;
-            text-align: center;
-        }
-        
-        /* 선택지 */
-        .choices {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        
-        .choice-btn {
-            background: linear-gradient(135deg, #2a2a3e 0%, #1a1a2e 100%);
-            color: #f0e6d2;
-            border: 2px solid #d4af37;
-            padding: 15px 20px;
-            border-radius: 8px;
-            font-size: 1.05em;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: left;
-        }
-        
-        .choice-btn:hover {
-            background: linear-gradient(135deg, #3a3a4e 0%, #2a2a3e 100%);
-            border-color: #ffd700;
-            transform: translateX(5px);
-            box-shadow: 0 3px 10px rgba(212, 175, 55, 0.3);
-        }
-        
-        .choice-btn:active {
-            transform: scale(0.98);
-        }
-        
-        /* 결과 표시 */
-        .result-box {
-            background: rgba(212, 175, 55, 0.1);
-            border: 2px solid #d4af37;
-            padding: 20px;
-            border-radius: 8px;
             margin-bottom: 20px;
-            display: none;
+            color: #00d4ff;
         }
         
-        .result-box.show {
-            display: block;
-            animation: fadeIn 0.5s ease;
+        .skill-tree {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
         }
         
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .skill-branch {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
         }
         
-        .result-text {
-            font-size: 1.1em;
-            color: #f0e6d2;
+        .branch-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #ffd700;
             margin-bottom: 15px;
             text-align: center;
         }
         
-        .continue-btn {
-            display: block;
-            margin: 0 auto;
-            background: #d4af37;
-            color: #1a1a2e;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 6px;
-            font-size: 1.1em;
-            font-weight: bold;
+        .skill-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 2px solid #555;
             cursor: pointer;
             transition: all 0.3s ease;
         }
         
-        .continue-btn:hover {
-            background: #ffd700;
+        .skill-item:hover {
+            border-color: #ffd700;
+        }
+        
+        .skill-item.active {
+            border-color: #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+        }
+        
+        .skill-name {
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+        
+        .skill-desc {
+            font-size: 0.85em;
+            color: #aaa;
+        }
+        
+        .skill-level {
+            display: flex;
+            gap: 5px;
+            margin-top: 8px;
+        }
+        
+        .level-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #333;
+            border: 1px solid #555;
+        }
+        
+        .level-dot.filled {
+            background: #00ff00;
+            box-shadow: 0 0 5px #00ff00;
+        }
+        
+        /* 버튼 */
+        .action-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 15px 40px;
+            font-size: 1.3em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .action-btn:hover {
             transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.5);
+        }
+        
+        .action-btn:disabled {
+            background: #555;
+            color: #999;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* 결과 화면 */
+        .results-container {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            padding: 30px;
+            border: 2px solid #ffd700;
+        }
+        
+        .results-title {
+            font-size: 2.5em;
+            color: #ffd700;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .ranking-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .ranking-table th {
+            background: rgba(255, 215, 0, 0.2);
+            padding: 15px;
+            text-align: left;
+            color: #ffd700;
+            border-bottom: 2px solid #ffd700;
+        }
+        
+        .ranking-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .ranking-table tr.player-row {
+            background: rgba(0, 255, 0, 0.1);
+            font-weight: bold;
+        }
+        
+        .rank-medal {
+            font-size: 1.5em;
+        }
+        
+        .hidden {
+            display: none;
         }
     </style>
 </head>
@@ -240,330 +258,341 @@
     <div class="container">
         <header>
             <h1>🏛️ 만신전</h1>
-            <div class="subtitle">신들의 뜻을 관리하는 대사제가 되어라</div>
+            <div class="league-info">League <span id="leagueNumber">1</span></div>
         </header>
         
-        <!-- 대시보드 -->
-        <div class="dashboard">
-            <div class="status-row">
-                <div class="stat-box">
-                    <div class="stat-label">Day</div>
-                    <div class="stat-value" id="day">1</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">Sovereign</div>
-                    <div class="stat-value" id="sovereign">100</div>
-                </div>
-            </div>
-            
-            <!-- 신들의 호감도 -->
-            <div class="gods-section">
-                <div class="gods-title">⚡ 신들의 호감</div>
-                
-                <div class="god-item">
-                    <div class="god-name">
-                        <span class="god-label">Athens</span>
-                        <span class="god-value" id="athens-value">50</span>
-                    </div>
-                    <div class="favor-bar-bg">
-                        <div class="favor-bar" id="athens-bar" style="width: 50%"></div>
-                    </div>
-                </div>
-                
-                <div class="god-item">
-                    <div class="god-name">
-                        <span class="god-label">Rome</span>
-                        <span class="god-value" id="rome-value">50</span>
-                    </div>
-                    <div class="favor-bar-bg">
-                        <div class="favor-bar" id="rome-bar" style="width: 50%"></div>
-                    </div>
-                </div>
-                
-                <div class="god-item">
-                    <div class="god-name">
-                        <span class="god-label">Memphis</span>
-                        <span class="god-value" id="memphis-value">50</span>
-                    </div>
-                    <div class="favor-bar-bg">
-                        <div class="favor-bar" id="memphis-bar" style="width: 50%"></div>
-                    </div>
-                </div>
-                
-                <div class="god-item">
-                    <div class="god-name">
-                        <span class="god-label">Babylon</span>
-                        <span class="god-value" id="babylon-value">50</span>
-                    </div>
-                    <div class="favor-bar-bg">
-                        <div class="favor-bar" id="babylon-bar" style="width: 50%"></div>
-                    </div>
-                </div>
-                
-                <div class="god-item">
-                    <div class="god-name">
-                        <span class="god-label">Thebes</span>
-                        <span class="god-value" id="thebes-value">50</span>
-                    </div>
-                    <div class="favor-bar-bg">
-                        <div class="favor-bar" id="thebes-bar" style="width: 50%"></div>
-                    </div>
-                </div>
-            </div>
+        <!-- 신 선택 화면 -->
+        <div id="selectionScreen">
+            <h2 style="text-align: center; color: #ffd700; margin-bottom: 20px;">신을 선택하세요</h2>
+            <div class="god-selection" id="godList"></div>
+            <button class="action-btn" id="confirmGodBtn" disabled onclick="confirmGod()">선택 확정</button>
         </div>
         
-        <!-- 결과 표시 -->
-        <div class="result-box" id="resultBox">
-            <div class="result-text" id="resultText"></div>
-            <button class="continue-btn" onclick="nextEvent()">계속</button>
+        <!-- 스킬 트리 화면 -->
+        <div id="skillScreen" class="hidden">
+            <div class="skill-tree-container">
+                <div class="skill-tree-title" id="selectedGodName"></div>
+                <div class="skill-points">남은 포인트: <span id="remainingPoints">10</span></div>
+                <div class="skill-tree" id="skillTree"></div>
+            </div>
+            <button class="action-btn" onclick="startLeague()">리그 시작</button>
         </div>
         
-        <!-- 이벤트 카드 -->
-        <div class="event-card" id="eventCard">
-            <div class="event-title" id="eventTitle">불길한 징조</div>
-            <div class="event-text" id="eventText">
-                하늘에서 붉은 별이 떨어졌습니다. 사제들이 이것이 무엇을 의미하는지 물어옵니다.
-            </div>
-            <div class="choices" id="choices">
-                <!-- 선택지가 여기에 동적으로 생성됩니다 -->
+        <!-- 결과 화면 -->
+        <div id="resultsScreen" class="hidden">
+            <div class="results-container">
+                <div class="results-title">🏆 리그 결과</div>
+                <table class="ranking-table">
+                    <thead>
+                        <tr>
+                            <th>순위</th>
+                            <th>신</th>
+                            <th>총 스탯</th>
+                            <th>승/패</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rankingBody"></tbody>
+                </table>
+                <button class="action-btn" onclick="nextLeague()">다음 리그</button>
             </div>
         </div>
     </div>
     
     <script>
         // 게임 상태
-        const gameState = {
-            day: 1,
-            sovereign: 100,
-            gods: {
-                athens: 50,
-                rome: 50,
-                memphis: 50,
-                babylon: 50,
-                thebes: 50
+        let gameState = {
+            league: 1,
+            selectedGod: null,
+            skillPoints: 10,
+            skills: {}
+        };
+        
+        // 30개 신 데이터
+        const gods = [
+            { id: 'athens', name: 'Athens', type: '지혜' },
+            { id: 'rome', name: 'Rome', type: '전쟁' },
+            { id: 'tokyo', name: 'Tokyo', type: '기술' },
+            { id: 'paris', name: 'Paris', type: '문화' },
+            { id: 'seoul', name: 'Seoul', type: '혁신' },
+            { id: 'cairo', name: 'Cairo', type: '영생' },
+            { id: 'moscow', name: 'Moscow', type: '추위' },
+            { id: 'sydney', name: 'Sydney', type: '항해' },
+            { id: 'london', name: 'London', type: '제국' },
+            { id: 'beijing', name: 'Beijing', type: '통치' },
+            { id: 'amazon', name: 'Amazon', type: '생명' },
+            { id: 'sahara', name: 'Sahara', type: '극한' },
+            { id: 'alps', name: 'Alps', type: '고지' },
+            { id: 'himalayas', name: 'Himalayas', type: '정복' },
+            { id: 'babylon', name: 'Babylon', type: '번영' },
+            { id: 'memphis', name: 'Memphis', type: '신비' },
+            { id: 'thebes', name: 'Thebes', type: '태양' },
+            { id: 'sparta', name: 'Sparta', type: '전사' },
+            { id: 'venice', name: 'Venice', type: '무역' },
+            { id: 'vienna', name: 'Vienna', type: '예술' },
+            { id: 'delhi', name: 'Delhi', type: '향신료' },
+            { id: 'bangkok', name: 'Bangkok', type: '조화' },
+            { id: 'istanbul', name: 'Istanbul', type: '교류' },
+            { id: 'rio', name: 'Rio', type: '축제' },
+            { id: 'kilimanjaro', name: 'Kilimanjaro', type: '정상' },
+            { id: 'everest', name: 'Everest', type: '초월' },
+            { id: 'nile', name: 'Nile', type: '풍요' },
+            { id: 'rhine', name: 'Rhine', type: '흐름' },
+            { id: 'ganges', name: 'Ganges', type: '정화' },
+            { id: 'euphrates', name: 'Euphrates', type: '문명' }
+        ];
+        
+        // 스킬 트리 (신마다 고유)
+        const skillTrees = {
+            athens: {
+                wisdom: {
+                    name: '지혜',
+                    skills: [
+                        { id: 'strategy', name: '전략', desc: '공격력 +5', stat: 'attack', value: 5, maxLevel: 3 },
+                        { id: 'philosophy', name: '철학', desc: '방어력 +5', stat: 'defense', value: 5, maxLevel: 3 }
+                    ]
+                },
+                democracy: {
+                    name: '민주주의',
+                    skills: [
+                        { id: 'unity', name: '단결', desc: '체력 +10', stat: 'hp', value: 10, maxLevel: 2 },
+                        { id: 'diplomacy', name: '외교', desc: '회피 +3', stat: 'dodge', value: 3, maxLevel: 2 }
+                    ]
+                }
+            },
+            tokyo: {
+                technology: {
+                    name: '기술',
+                    skills: [
+                        { id: 'innovation', name: '혁신', desc: '공격력 +7', stat: 'attack', value: 7, maxLevel: 3 },
+                        { id: 'efficiency', name: '효율', desc: '속도 +5', stat: 'speed', value: 5, maxLevel: 2 }
+                    ]
+                },
+                harmony: {
+                    name: '조화',
+                    skills: [
+                        { id: 'balance', name: '균형', desc: '방어력 +6', stat: 'defense', value: 6, maxLevel: 3 },
+                        { id: 'precision', name: '정밀', desc: '치명타 +4', stat: 'crit', value: 4, maxLevel: 2 }
+                    ]
+                }
+            },
+            amazon: {
+                life: {
+                    name: '생명력',
+                    skills: [
+                        { id: 'vitality', name: '활력', desc: '체력 +15', stat: 'hp', value: 15, maxLevel: 3 },
+                        { id: 'regeneration', name: '재생', desc: '회복 +5', stat: 'regen', value: 5, maxLevel: 2 }
+                    ]
+                },
+                wild: {
+                    name: '야생',
+                    skills: [
+                        { id: 'savagery', name: '야만', desc: '공격력 +8', stat: 'attack', value: 8, maxLevel: 2 },
+                        { id: 'stealth', name: '은신', desc: '회피 +6', stat: 'dodge', value: 6, maxLevel: 3 }
+                    ]
+                }
+            }
+            // 나머지 신들은 기본 템플릿 사용
+        };
+        
+        // 기본 스킬 트리 템플릿
+        const defaultSkillTree = {
+            power: {
+                name: '힘',
+                skills: [
+                    { id: 'strength', name: '강력함', desc: '공격력 +6', stat: 'attack', value: 6, maxLevel: 3 },
+                    { id: 'fortitude', name: '인내', desc: '방어력 +6', stat: 'defense', value: 6, maxLevel: 3 }
+                ]
+            },
+            agility: {
+                name: '민첩',
+                skills: [
+                    { id: 'swiftness', name: '신속', desc: '속도 +4', stat: 'speed', value: 4, maxLevel: 2 },
+                    { id: 'evasion', name: '회피', desc: '회피 +5', stat: 'dodge', value: 5, maxLevel: 3 }
+                ]
             }
         };
         
-        // 이벤트 데이터
-        const events = [
-            {
-                title: "불길한 징조",
-                text: "하늘에서 붉은 별이 떨어졌습니다. 사제들이 이것이 무엇을 의미하는지 물어옵니다.",
-                choices: [
-                    {
-                        text: "Athens의 신탁을 구하라. 지혜가 길을 보여줄 것이다.",
-                        result: "Athens의 사제들이 기뻐하며 예언서를 열었습니다.",
-                        effects: { sovereign: -10, athens: 15, rome: -5 }
-                    },
-                    {
-                        text: "Rome의 군단에게 경계를 강화하라. 전쟁의 전조일 수 있다.",
-                        result: "Rome의 군단장이 만족스럽게 고개를 끄덕였습니다.",
-                        effects: { sovereign: -15, rome: 20, memphis: -5 }
-                    },
-                    {
-                        text: "Memphis의 신전에 제물을 바쳐라. 죽음의 신이 노했을지 모른다.",
-                        result: "Memphis의 사제들이 어둠 속에서 의식을 거행했습니다.",
-                        effects: { sovereign: -20, memphis: 25, babylon: -5 }
-                    },
-                    {
-                        text: "무시하라. 별똥별일 뿐이다.",
-                        result: "백성들은 불안해하지만, 국고는 절약되었습니다.",
-                        effects: { sovereign: 10, athens: -10, rome: -10, memphis: -10 }
-                    }
-                ]
-            },
-            {
-                title: "풍년의 축복",
-                text: "올해 수확이 풍성합니다. 이 축복을 누구의 은총으로 돌릴까요?",
-                choices: [
-                    {
-                        text: "Babylon의 풍요의 신에게 감사제를 올린다.",
-                        result: "Babylon의 신전에서 성대한 축제가 열렸습니다.",
-                        effects: { sovereign: -15, babylon: 20 }
-                    },
-                    {
-                        text: "Thebes의 태양신에게 황금 제물을 바친다.",
-                        result: "Thebes의 신전이 빛으로 가득 찼습니다.",
-                        effects: { sovereign: -25, thebes: 25 }
-                    },
-                    {
-                        text: "모든 신전에 곡식을 나누어 바친다.",
-                        result: "모든 신들이 당신의 공평함을 인정했습니다.",
-                        effects: { sovereign: -20, athens: 5, rome: 5, memphis: 5, babylon: 5, thebes: 5 }
-                    },
-                    {
-                        text: "인간의 노력의 결과다. 농부들에게 보상하라.",
-                        result: "백성들이 당신을 칭송하지만, 신들은 침묵합니다.",
-                        effects: { sovereign: 15, athens: -5, rome: -5, memphis: -5, babylon: -5, thebes: -5 }
-                    }
-                ]
-            },
-            {
-                title: "외교 사절",
-                text: "먼 왕국에서 사절이 왔습니다. 그들은 어느 신전에서 환대받아야 할까요?",
-                choices: [
-                    {
-                        text: "Athens에서 맞이한다. 지혜로운 대화가 필요하다.",
-                        result: "사절들은 Athens의 철학에 감명받아 돌아갔습니다.",
-                        effects: { sovereign: 10, athens: 15 }
-                    },
-                    {
-                        text: "Rome에서 맞이한다. 힘을 과시해야 한다.",
-                        result: "Rome의 위용에 사절들이 압도당했습니다.",
-                        effects: { sovereign: 5, rome: 15 }
-                    },
-                    {
-                        text: "Memphis에서 맞이한다. 신비로운 의식으로 경외감을 준다.",
-                        result: "Memphis의 신비에 사절들이 무릎을 꿇었습니다.",
-                        effects: { sovereign: 0, memphis: 20 }
-                    }
-                ]
-            },
-            {
-                title: "역병의 그림자",
-                text: "도시에 질병이 퍼지고 있습니다. 어떻게 대응하시겠습니까?",
-                choices: [
-                    {
-                        text: "Memphis의 치유 의식을 의뢰한다.",
-                        result: "Memphis의 사제들이 밤새 주문을 외웠습니다.",
-                        effects: { sovereign: -20, memphis: 20 }
-                    },
-                    {
-                        text: "Athens의 의학자들을 불러모은다.",
-                        result: "Athens의 학자들이 약초와 치료법을 연구했습니다.",
-                        effects: { sovereign: -15, athens: 18 }
-                    },
-                    {
-                        text: "Rome의 군단으로 격리 구역을 설정한다.",
-                        result: "Rome의 군단이 철저하게 질서를 유지했습니다.",
-                        effects: { sovereign: -10, rome: 12 }
-                    },
-                    {
-                        text: "모든 신전에 동시에 기도를 요청한다.",
-                        result: "신들의 합동 가호로 역병이 물러갔습니다.",
-                        effects: { sovereign: -30, athens: 8, rome: 8, memphis: 8, babylon: 8, thebes: 8 }
-                    }
-                ]
-            },
-            {
-                title: "신전 간의 분쟁",
-                text: "Athens와 Rome의 신전이 토지 소유권을 놓고 다투고 있습니다.",
-                choices: [
-                    {
-                        text: "Athens의 손을 들어준다.",
-                        result: "Athens가 승리를 자축했지만, Rome는 분노했습니다.",
-                        effects: { sovereign: 0, athens: 20, rome: -15 }
-                    },
-                    {
-                        text: "Rome의 손을 들어준다.",
-                        result: "Rome이 만족했지만, Athens는 실망했습니다.",
-                        effects: { sovereign: 0, rome: 20, athens: -15 }
-                    },
-                    {
-                        text: "토지를 반반 나눈다.",
-                        result: "양쪽 모두 불만족스러워하지만 받아들였습니다.",
-                        effects: { sovereign: -5, athens: 5, rome: 5 }
-                    },
-                    {
-                        text: "토지를 국가가 몰수하고 Babylon 신전에 기증한다.",
-                        result: "Babylon이 기뻐했지만, Athens와 Rome은 배신감을 느꼈습니다.",
-                        effects: { sovereign: 10, babylon: 25, athens: -20, rome: -20 }
-                    }
-                ]
-            }
-        ];
-        
-        let currentEventIndex = 0;
-        
-        // UI 업데이트
-        function updateUI() {
-            document.getElementById('day').textContent = gameState.day;
-            document.getElementById('sovereign').textContent = gameState.sovereign;
-            
-            for (let god in gameState.gods) {
-                const value = Math.max(0, Math.min(100, gameState.gods[god]));
-                gameState.gods[god] = value;
-                document.getElementById(`${god}-value`).textContent = value;
-                document.getElementById(`${god}-bar`).style.width = value + '%';
-            }
-            
-            // 게임 오버 체크
-            if (gameState.sovereign <= 0) {
-                showGameOver('파산했습니다! 주권을 모두 잃었습니다.');
-            }
-            
-            const godValues = Object.values(gameState.gods);
-            if (godValues.every(v => v <= 10)) {
-                showGameOver('모든 신들이 당신을 버렸습니다!');
-            }
-            
-            if (godValues.some(v => v >= 90)) {
-                const highGod = Object.keys(gameState.gods).find(g => gameState.gods[g] >= 90);
-                showGameOver(`${highGod.toUpperCase()}의 총애를 받아 승천했습니다!`);
-            }
+        // 신 목록 렌더링
+        function renderGods() {
+            const godList = document.getElementById('godList');
+            godList.innerHTML = gods.map(god => `
+                <div class="god-card" onclick="selectGod('${god.id}')">
+                    <div class="god-name">${god.name}</div>
+                    <div class="god-type">${god.type}</div>
+                </div>
+            `).join('');
         }
         
-        // 이벤트 표시
-        function showEvent(event) {
-            document.getElementById('eventTitle').textContent = event.title;
-            document.getElementById('eventText').textContent = event.text;
+        // 신 선택
+        function selectGod(godId) {
+            gameState.selectedGod = godId;
+            document.querySelectorAll('.god-card').forEach(card => card.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            document.getElementById('confirmGodBtn').disabled = false;
+        }
+        
+        // 신 선택 확정
+        function confirmGod() {
+            document.getElementById('selectionScreen').classList.add('hidden');
+            document.getElementById('skillScreen').classList.remove('hidden');
             
-            const choicesDiv = document.getElementById('choices');
-            choicesDiv.innerHTML = '';
+            const god = gods.find(g => g.id === gameState.selectedGod);
+            document.getElementById('selectedGodName').textContent = god.name + ' 특성 트리';
             
-            event.choices.forEach((choice, index) => {
-                const btn = document.createElement('button');
-                btn.className = 'choice-btn';
-                btn.textContent = choice.text;
-                btn.onclick = () => selectChoice(choice);
-                choicesDiv.appendChild(btn);
+            renderSkillTree();
+        }
+        
+        // 스킬 트리 렌더링
+        function renderSkillTree() {
+            const skillTree = skillTrees[gameState.selectedGod] || defaultSkillTree;
+            const container = document.getElementById('skillTree');
+            
+            container.innerHTML = Object.entries(skillTree).map(([branchId, branch]) => `
+                <div class="skill-branch">
+                    <div class="branch-name">${branch.name}</div>
+                    ${branch.skills.map(skill => `
+                        <div class="skill-item" onclick="toggleSkill('${branchId}', '${skill.id}')">
+                            <div class="skill-name">${skill.name}</div>
+                            <div class="skill-desc">${skill.desc}</div>
+                            <div class="skill-level" id="skill-${branchId}-${skill.id}">
+                                ${Array(skill.maxLevel).fill(0).map((_, i) => 
+                                    `<div class="level-dot"></div>`
+                                ).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `).join('');
+            
+            gameState.skills = {};
+        }
+        
+        // 스킬 토글
+        function toggleSkill(branchId, skillId) {
+            const key = `${branchId}-${skillId}`;
+            const skillTree = skillTrees[gameState.selectedGod] || defaultSkillTree;
+            const skill = skillTree[branchId].skills.find(s => s.id === skillId);
+            
+            if (!gameState.skills[key]) {
+                gameState.skills[key] = 0;
+            }
+            
+            if (gameState.skillPoints > 0 && gameState.skills[key] < skill.maxLevel) {
+                gameState.skills[key]++;
+                gameState.skillPoints--;
+            } else if (gameState.skills[key] > 0) {
+                gameState.skills[key]--;
+                gameState.skillPoints++;
+            }
+            
+            updateSkillDisplay(branchId, skillId, gameState.skills[key]);
+            document.getElementById('remainingPoints').textContent = gameState.skillPoints;
+        }
+        
+        // 스킬 레벨 표시 업데이트
+        function updateSkillDisplay(branchId, skillId, level) {
+            const container = document.getElementById(`skill-${branchId}-${skillId}`);
+            const dots = container.querySelectorAll('.level-dot');
+            dots.forEach((dot, i) => {
+                if (i < level) {
+                    dot.classList.add('filled');
+                } else {
+                    dot.classList.remove('filled');
+                }
             });
         }
         
-        // 선택지 처리
-        function selectChoice(choice) {
-            // 효과 적용
-            for (let key in choice.effects) {
-                if (key === 'sovereign') {
-                    gameState.sovereign += choice.effects[key];
+        // 리그 시작
+        function startLeague() {
+            // AI 신들의 스탯 랜덤 생성
+            const participants = gods.map(god => {
+                const isPlayer = god.id === gameState.selectedGod;
+                let totalStat;
+                
+                if (isPlayer) {
+                    // 플레이어 스탯 계산
+                    const skillTree = skillTrees[god.id] || defaultSkillTree;
+                    totalStat = 50; // 기본 스탯
+                    
+                    Object.entries(gameState.skills).forEach(([key, level]) => {
+                        const [branchId, skillId] = key.split('-');
+                        const skill = skillTree[branchId].skills.find(s => s.id === skillId);
+                        totalStat += skill.value * level;
+                    });
                 } else {
-                    gameState.gods[key] += choice.effects[key];
+                    // AI는 랜덤 (40~120)
+                    totalStat = 40 + Math.floor(Math.random() * 80);
                 }
-            }
+                
+                return {
+                    ...god,
+                    totalStat,
+                    isPlayer,
+                    wins: 0,
+                    losses: 0
+                };
+            });
             
-            // 결과 표시
-            document.getElementById('resultText').textContent = choice.result;
-            document.getElementById('resultBox').classList.add('show');
-            document.getElementById('eventCard').style.display = 'none';
+            // 1:1 토너먼트 시뮬레이션 (간단 버전)
+            participants.forEach((p1, i) => {
+                for (let j = i + 1; j < participants.length; j++) {
+                    const p2 = participants[j];
+                    const winner = p1.totalStat > p2.totalStat ? p1 : 
+                                  (p2.totalStat > p1.totalStat ? p2 : 
+                                  (Math.random() > 0.5 ? p1 : p2));
+                    const loser = winner === p1 ? p2 : p1;
+                    
+                    winner.wins++;
+                    loser.losses++;
+                }
+            });
             
-            updateUI();
+            // 순위 정렬 (승수 > 총스탯)
+            participants.sort((a, b) => {
+                if (b.wins !== a.wins) return b.wins - a.wins;
+                return b.totalStat - a.totalStat;
+            });
+            
+            showResults(participants);
         }
         
-        // 다음 이벤트
-        function nextEvent() {
-            gameState.day++;
-            currentEventIndex = (currentEventIndex + 1) % events.length;
+        // 결과 표시
+        function showResults(participants) {
+            document.getElementById('skillScreen').classList.add('hidden');
+            document.getElementById('resultsScreen').classList.remove('hidden');
             
-            document.getElementById('resultBox').classList.remove('show');
-            document.getElementById('eventCard').style.display = 'block';
-            
-            showEvent(events[currentEventIndex]);
-            updateUI();
+            const tbody = document.getElementById('rankingBody');
+            tbody.innerHTML = participants.map((p, i) => {
+                const rank = i + 1;
+                const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
+                
+                return `
+                    <tr class="${p.isPlayer ? 'player-row' : ''}">
+                        <td><span class="rank-medal">${medal}</span> ${rank}</td>
+                        <td>${p.name}${p.isPlayer ? ' (YOU)' : ''}</td>
+                        <td>${p.totalStat}</td>
+                        <td>${p.wins}승 ${p.losses}패</td>
+                    </tr>
+                `;
+            }).join('');
         }
         
-        // 게임 오버
-        function showGameOver(message) {
-            document.getElementById('eventCard').innerHTML = `
-                <div class="event-title">게임 종료</div>
-                <div class="event-text">${message}</div>
-                <div class="event-text">Day ${gameState.day}까지 버텼습니다.</div>
-                <button class="continue-btn" onclick="location.reload()">다시 시작</button>
-            `;
+        // 다음 리그
+        function nextLeague() {
+            gameState.league++;
+            gameState.skillPoints = 10;
+            gameState.skills = {};
+            
+            document.getElementById('leagueNumber').textContent = gameState.league;
+            document.getElementById('resultsScreen').classList.add('hidden');
+            document.getElementById('selectionScreen').classList.remove('hidden');
+            document.getElementById('confirmGodBtn').disabled = true;
+            
+            renderGods();
         }
         
         // 초기화
-        showEvent(events[0]);
-        updateUI();
+        renderGods();
     </script>
 </body>
 </html>
