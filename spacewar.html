@@ -345,7 +345,7 @@
                 
                 // 배경 별
                 this.stars = [];
-                for (let i = 0; i < 200; i++) {
+                for (let i = 0; i < this.CONSTANTS.STAR_COUNT; i++) {
                     const star = this.add.circle(
                         Phaser.Math.Between(0, config.width),
                         Phaser.Math.Between(0, config.height),
@@ -359,20 +359,24 @@
                 
                 // 플레이어
                 this.player = this.add.sprite(config.width / 2, config.height / 2, 'player');
+                this.physics.add.existing(this.player);
                 
-                // 엔진 파티클
+                // 엔진 파티클 (플레이어에 종속)
                 this.engineFire = this.add.particles(0, 0, 'particle', {
                     speed: { min: 50, max: 100 },
                     scale: { start: 0.4, end: 0 },
                     tint: [0xff4400, 0xff8844],
                     lifespan: 200,
-                    frequency: 20,
-                    x: config.width / 2,
-                    y: config.height / 2 + 35
+                    frequency: 20
                 });
+                this.engineFire.startFollow(this.player, 0, this.CONSTANTS.ENGINE_OFFSET_Y);
                 
-                this.enemies = this.add.group();
-                this.projectiles = this.add.group();
+                this.enemies = this.physics.add.group();
+                this.projectiles = this.physics.add.group();
+                
+                // 충돌 감지 설정
+                this.physics.add.overlap(this.projectiles, this.enemies, this.hitEnemy, null, this);
+                this.physics.add.overlap(this.player, this.enemies, this.hitPlayer, null, this);
                 
                 this.time.addEvent({
                     delay: 1000,
@@ -389,17 +393,30 @@
             }
 
             initGame() {
+                // 게임 상수
+                this.CONSTANTS = {
+                    PLAYER_START_HP: 150,
+                    BASE_EXP_TO_NEXT: 100,
+                    EXP_SCALE: 1.2,
+                    EXP_PER_KILL: 10,
+                    MIN_SPAWN_RATE: 100,
+                    BASE_SPAWN_RATE: 300,
+                    SPAWN_RATE_DECREASE: 8,
+                    STAR_COUNT: 200,
+                    ENGINE_OFFSET_Y: 35
+                };
+                
                 this.gameRunning = true;
                 this.gamePaused = false;
                 this.gameTime = 0;
                 this.kills = 0;
                 
                 this.playerData = {
-                    hp: 150,
-                    maxHp: 150,
+                    hp: this.CONSTANTS.PLAYER_START_HP,
+                    maxHp: this.CONSTANTS.PLAYER_START_HP,
                     level: 1,
                     exp: 0,
-                    expToNext: 100
+                    expToNext: this.CONSTANTS.BASE_EXP_TO_NEXT
                 };
                 
                 this.weapons = [{ type: 'laser', lastShot: 0 }];
@@ -440,41 +457,13 @@
                 this.enemies.getChildren().forEach(enemy => {
                     const data = enemy.getData('data');
                     this.physics.moveToObject(enemy, this.player, data.speed);
-                    
-                    const dist = Phaser.Math.Distance.Between(
-                        enemy.x, enemy.y, this.player.x, this.player.y
-                    );
-                    if (dist < 40) {
-                        this.playerData.hp -= data.damage;
-                        this.cameras.main.shake(100, 0.01);
-                        enemy.destroy();
-                        if (this.playerData.hp <= 0) this.gameOver();
-                    }
-                    
-                    this.projectiles.getChildren().forEach(proj => {
-                        const pdist = Phaser.Math.Distance.Between(
-                            proj.x, proj.y, enemy.x, enemy.y
-                        );
-                        if (pdist < 25) {
-                            const projData = proj.getData('data');
-                            const damage = projData.damage * (1 + this.weaponTypes.damage.level * 0.1);
-                            data.hp -= damage;
-                            proj.destroy();
-                            
-                            if (data.hp <= 0) {
-                                this.kills++;
-                                enemy.destroy();
-                                this.playerData.exp += 10;
-                                if (this.playerData.exp >= this.playerData.expToNext) {
-                                    this.levelUp();
-                                }
-                            }
-                        }
-                    });
                 });
                 
                 // 적 스폰
-                const spawnRate = Math.max(300 - this.gameTime * 8, 100);
+                const spawnRate = Math.max(
+                    this.CONSTANTS.BASE_SPAWN_RATE - this.gameTime * this.CONSTANTS.SPAWN_RATE_DECREASE,
+                    this.CONSTANTS.MIN_SPAWN_RATE
+                );
                 this.spawnTimer += delta;
                 if (this.spawnTimer > spawnRate) {
                     this.spawnEnemy();
@@ -514,10 +503,38 @@
                 });
             }
 
+            hitEnemy(projectile, enemy) {
+                const projData = projectile.getData('data');
+                const enemyData = enemy.getData('data');
+                const damage = projData.damage * (1 + this.weaponTypes.damage.level * 0.1);
+                
+                enemyData.hp -= damage;
+                projectile.destroy();
+                
+                if (enemyData.hp <= 0) {
+                    this.kills++;
+                    enemy.destroy();
+                    this.playerData.exp += this.CONSTANTS.EXP_PER_KILL;
+                    if (this.playerData.exp >= this.playerData.expToNext) {
+                        this.levelUp();
+                    }
+                }
+            }
+            
+            hitPlayer(player, enemy) {
+                const data = enemy.getData('data');
+                this.playerData.hp -= data.damage;
+                this.cameras.main.shake(100, 0.01);
+                enemy.destroy();
+                if (this.playerData.hp <= 0) {
+                    this.gameOver();
+                }
+            }
+
             levelUp() {
                 this.playerData.level++;
                 this.playerData.exp -= this.playerData.expToNext;
-                this.playerData.expToNext = Math.floor(this.playerData.expToNext * 1.2);
+                this.playerData.expToNext = Math.floor(this.playerData.expToNext * this.CONSTANTS.EXP_SCALE);
                 this.gamePaused = true;
                 this.physics.pause(); // 물리 엔진 일시정지
                 showLevelUp(this);
