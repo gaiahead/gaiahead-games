@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>만신전 (Pantheon)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #f0e6d2;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 2px solid #d4af37;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            color: #d4af37;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.1em;
+            color: #c9b88c;
+            font-style: italic;
+        }
+        
+        /* 대시보드 */
+        .dashboard {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #4a4a4a;
+        }
+        
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+        
+        .stat-box {
+            flex: 1;
+            background: rgba(212, 175, 55, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #d4af37;
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            color: #c9b88c;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #d4af37;
+        }
+        
+        /* 신들의 호감도 */
+        .gods-section {
+            margin-top: 25px;
+        }
+        
+        .gods-title {
+            font-size: 1.3em;
+            color: #d4af37;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .god-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border: 1px solid #3a3a3a;
+        }
+        
+        .god-name {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+        
+        .god-label {
+            color: #f0e6d2;
+            font-weight: bold;
+        }
+        
+        .god-value {
+            color: #d4af37;
+        }
+        
+        .favor-bar-bg {
+            height: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #3a3a3a;
+        }
+        
+        .favor-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #c9b88c 0%, #d4af37 100%);
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+        }
+        
+        /* 이벤트 카드 */
+        .event-card {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #d4af37;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .event-title {
+            font-size: 1.5em;
+            color: #d4af37;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .event-text {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            color: #f0e6d2;
+            text-align: center;
+        }
+        
+        /* 선택지 */
+        .choices {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .choice-btn {
+            background: linear-gradient(135deg, #2a2a3e 0%, #1a1a2e 100%);
+            color: #f0e6d2;
+            border: 2px solid #d4af37;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-size: 1.05em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+        
+        .choice-btn:hover {
+            background: linear-gradient(135deg, #3a3a4e 0%, #2a2a3e 100%);
+            border-color: #ffd700;
+            transform: translateX(5px);
+            box-shadow: 0 3px 10px rgba(212, 175, 55, 0.3);
+        }
+        
+        .choice-btn:active {
+            transform: scale(0.98);
+        }
+        
+        /* 결과 표시 */
+        .result-box {
+            background: rgba(212, 175, 55, 0.1);
+            border: 2px solid #d4af37;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .result-box.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .result-text {
+            font-size: 1.1em;
+            color: #f0e6d2;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .continue-btn {
+            display: block;
+            margin: 0 auto;
+            background: #d4af37;
+            color: #1a1a2e;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .continue-btn:hover {
+            background: #ffd700;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏛️ 만신전</h1>
+            <div class="subtitle">신들의 뜻을 관리하는 대사제가 되어라</div>
+        </header>
+        
+        <!-- 대시보드 -->
+        <div class="dashboard">
+            <div class="status-row">
+                <div class="stat-box">
+                    <div class="stat-label">Day</div>
+                    <div class="stat-value" id="day">1</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Sovereign</div>
+                    <div class="stat-value" id="sovereign">100</div>
+                </div>
+            </div>
+            
+            <!-- 신들의 호감도 -->
+            <div class="gods-section">
+                <div class="gods-title">⚡ 신들의 호감</div>
+                
+                <div class="god-item">
+                    <div class="god-name">
+                        <span class="god-label">Athens</span>
+                        <span class="god-value" id="athens-value">50</span>
+                    </div>
+                    <div class="favor-bar-bg">
+                        <div class="favor-bar" id="athens-bar" style="width: 50%"></div>
+                    </div>
+                </div>
+                
+                <div class="god-item">
+                    <div class="god-name">
+                        <span class="god-label">Rome</span>
+                        <span class="god-value" id="rome-value">50</span>
+                    </div>
+                    <div class="favor-bar-bg">
+                        <div class="favor-bar" id="rome-bar" style="width: 50%"></div>
+                    </div>
+                </div>
+                
+                <div class="god-item">
+                    <div class="god-name">
+                        <span class="god-label">Memphis</span>
+                        <span class="god-value" id="memphis-value">50</span>
+                    </div>
+                    <div class="favor-bar-bg">
+                        <div class="favor-bar" id="memphis-bar" style="width: 50%"></div>
+                    </div>
+                </div>
+                
+                <div class="god-item">
+                    <div class="god-name">
+                        <span class="god-label">Babylon</span>
+                        <span class="god-value" id="babylon-value">50</span>
+                    </div>
+                    <div class="favor-bar-bg">
+                        <div class="favor-bar" id="babylon-bar" style="width: 50%"></div>
+                    </div>
+                </div>
+                
+                <div class="god-item">
+                    <div class="god-name">
+                        <span class="god-label">Thebes</span>
+                        <span class="god-value" id="thebes-value">50</span>
+                    </div>
+                    <div class="favor-bar-bg">
+                        <div class="favor-bar" id="thebes-bar" style="width: 50%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 결과 표시 -->
+        <div class="result-box" id="resultBox">
+            <div class="result-text" id="resultText"></div>
+            <button class="continue-btn" onclick="nextEvent()">계속</button>
+        </div>
+        
+        <!-- 이벤트 카드 -->
+        <div class="event-card" id="eventCard">
+            <div class="event-title" id="eventTitle">불길한 징조</div>
+            <div class="event-text" id="eventText">
+                하늘에서 붉은 별이 떨어졌습니다. 사제들이 이것이 무엇을 의미하는지 물어옵니다.
+            </div>
+            <div class="choices" id="choices">
+                <!-- 선택지가 여기에 동적으로 생성됩니다 -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 게임 상태
+        const gameState = {
+            day: 1,
+            sovereign: 100,
+            gods: {
+                athens: 50,
+                rome: 50,
+                memphis: 50,
+                babylon: 50,
+                thebes: 50
+            }
+        };
+        
+        // 이벤트 데이터
+        const events = [
+            {
+                title: "불길한 징조",
+                text: "하늘에서 붉은 별이 떨어졌습니다. 사제들이 이것이 무엇을 의미하는지 물어옵니다.",
+                choices: [
+                    {
+                        text: "Athens의 신탁을 구하라. 지혜가 길을 보여줄 것이다.",
+                        result: "Athens의 사제들이 기뻐하며 예언서를 열었습니다.",
+                        effects: { sovereign: -10, athens: 15, rome: -5 }
+                    },
+                    {
+                        text: "Rome의 군단에게 경계를 강화하라. 전쟁의 전조일 수 있다.",
+                        result: "Rome의 군단장이 만족스럽게 고개를 끄덕였습니다.",
+                        effects: { sovereign: -15, rome: 20, memphis: -5 }
+                    },
+                    {
+                        text: "Memphis의 신전에 제물을 바쳐라. 죽음의 신이 노했을지 모른다.",
+                        result: "Memphis의 사제들이 어둠 속에서 의식을 거행했습니다.",
+                        effects: { sovereign: -20, memphis: 25, babylon: -5 }
+                    },
+                    {
+                        text: "무시하라. 별똥별일 뿐이다.",
+                        result: "백성들은 불안해하지만, 국고는 절약되었습니다.",
+                        effects: { sovereign: 10, athens: -10, rome: -10, memphis: -10 }
+                    }
+                ]
+            },
+            {
+                title: "풍년의 축복",
+                text: "올해 수확이 풍성합니다. 이 축복을 누구의 은총으로 돌릴까요?",
+                choices: [
+                    {
+                        text: "Babylon의 풍요의 신에게 감사제를 올린다.",
+                        result: "Babylon의 신전에서 성대한 축제가 열렸습니다.",
+                        effects: { sovereign: -15, babylon: 20 }
+                    },
+                    {
+                        text: "Thebes의 태양신에게 황금 제물을 바친다.",
+                        result: "Thebes의 신전이 빛으로 가득 찼습니다.",
+                        effects: { sovereign: -25, thebes: 25 }
+                    },
+                    {
+                        text: "모든 신전에 곡식을 나누어 바친다.",
+                        result: "모든 신들이 당신의 공평함을 인정했습니다.",
+                        effects: { sovereign: -20, athens: 5, rome: 5, memphis: 5, babylon: 5, thebes: 5 }
+                    },
+                    {
+                        text: "인간의 노력의 결과다. 농부들에게 보상하라.",
+                        result: "백성들이 당신을 칭송하지만, 신들은 침묵합니다.",
+                        effects: { sovereign: 15, athens: -5, rome: -5, memphis: -5, babylon: -5, thebes: -5 }
+                    }
+                ]
+            },
+            {
+                title: "외교 사절",
+                text: "먼 왕국에서 사절이 왔습니다. 그들은 어느 신전에서 환대받아야 할까요?",
+                choices: [
+                    {
+                        text: "Athens에서 맞이한다. 지혜로운 대화가 필요하다.",
+                        result: "사절들은 Athens의 철학에 감명받아 돌아갔습니다.",
+                        effects: { sovereign: 10, athens: 15 }
+                    },
+                    {
+                        text: "Rome에서 맞이한다. 힘을 과시해야 한다.",
+                        result: "Rome의 위용에 사절들이 압도당했습니다.",
+                        effects: { sovereign: 5, rome: 15 }
+                    },
+                    {
+                        text: "Memphis에서 맞이한다. 신비로운 의식으로 경외감을 준다.",
+                        result: "Memphis의 신비에 사절들이 무릎을 꿇었습니다.",
+                        effects: { sovereign: 0, memphis: 20 }
+                    }
+                ]
+            },
+            {
+                title: "역병의 그림자",
+                text: "도시에 질병이 퍼지고 있습니다. 어떻게 대응하시겠습니까?",
+                choices: [
+                    {
+                        text: "Memphis의 치유 의식을 의뢰한다.",
+                        result: "Memphis의 사제들이 밤새 주문을 외웠습니다.",
+                        effects: { sovereign: -20, memphis: 20 }
+                    },
+                    {
+                        text: "Athens의 의학자들을 불러모은다.",
+                        result: "Athens의 학자들이 약초와 치료법을 연구했습니다.",
+                        effects: { sovereign: -15, athens: 18 }
+                    },
+                    {
+                        text: "Rome의 군단으로 격리 구역을 설정한다.",
+                        result: "Rome의 군단이 철저하게 질서를 유지했습니다.",
+                        effects: { sovereign: -10, rome: 12 }
+                    },
+                    {
+                        text: "모든 신전에 동시에 기도를 요청한다.",
+                        result: "신들의 합동 가호로 역병이 물러갔습니다.",
+                        effects: { sovereign: -30, athens: 8, rome: 8, memphis: 8, babylon: 8, thebes: 8 }
+                    }
+                ]
+            },
+            {
+                title: "신전 간의 분쟁",
+                text: "Athens와 Rome의 신전이 토지 소유권을 놓고 다투고 있습니다.",
+                choices: [
+                    {
+                        text: "Athens의 손을 들어준다.",
+                        result: "Athens가 승리를 자축했지만, Rome는 분노했습니다.",
+                        effects: { sovereign: 0, athens: 20, rome: -15 }
+                    },
+                    {
+                        text: "Rome의 손을 들어준다.",
+                        result: "Rome이 만족했지만, Athens는 실망했습니다.",
+                        effects: { sovereign: 0, rome: 20, athens: -15 }
+                    },
+                    {
+                        text: "토지를 반반 나눈다.",
+                        result: "양쪽 모두 불만족스러워하지만 받아들였습니다.",
+                        effects: { sovereign: -5, athens: 5, rome: 5 }
+                    },
+                    {
+                        text: "토지를 국가가 몰수하고 Babylon 신전에 기증한다.",
+                        result: "Babylon이 기뻐했지만, Athens와 Rome은 배신감을 느꼈습니다.",
+                        effects: { sovereign: 10, babylon: 25, athens: -20, rome: -20 }
+                    }
+                ]
+            }
+        ];
+        
+        let currentEventIndex = 0;
+        
+        // UI 업데이트
+        function updateUI() {
+            document.getElementById('day').textContent = gameState.day;
+            document.getElementById('sovereign').textContent = gameState.sovereign;
+            
+            for (let god in gameState.gods) {
+                const value = Math.max(0, Math.min(100, gameState.gods[god]));
+                gameState.gods[god] = value;
+                document.getElementById(`${god}-value`).textContent = value;
+                document.getElementById(`${god}-bar`).style.width = value + '%';
+            }
+            
+            // 게임 오버 체크
+            if (gameState.sovereign <= 0) {
+                showGameOver('파산했습니다! 주권을 모두 잃었습니다.');
+            }
+            
+            const godValues = Object.values(gameState.gods);
+            if (godValues.every(v => v <= 10)) {
+                showGameOver('모든 신들이 당신을 버렸습니다!');
+            }
+            
+            if (godValues.some(v => v >= 90)) {
+                const highGod = Object.keys(gameState.gods).find(g => gameState.gods[g] >= 90);
+                showGameOver(`${highGod.toUpperCase()}의 총애를 받아 승천했습니다!`);
+            }
+        }
+        
+        // 이벤트 표시
+        function showEvent(event) {
+            document.getElementById('eventTitle').textContent = event.title;
+            document.getElementById('eventText').textContent = event.text;
+            
+            const choicesDiv = document.getElementById('choices');
+            choicesDiv.innerHTML = '';
+            
+            event.choices.forEach((choice, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+                btn.textContent = choice.text;
+                btn.onclick = () => selectChoice(choice);
+                choicesDiv.appendChild(btn);
+            });
+        }
+        
+        // 선택지 처리
+        function selectChoice(choice) {
+            // 효과 적용
+            for (let key in choice.effects) {
+                if (key === 'sovereign') {
+                    gameState.sovereign += choice.effects[key];
+                } else {
+                    gameState.gods[key] += choice.effects[key];
+                }
+            }
+            
+            // 결과 표시
+            document.getElementById('resultText').textContent = choice.result;
+            document.getElementById('resultBox').classList.add('show');
+            document.getElementById('eventCard').style.display = 'none';
+            
+            updateUI();
+        }
+        
+        // 다음 이벤트
+        function nextEvent() {
+            gameState.day++;
+            currentEventIndex = (currentEventIndex + 1) % events.length;
+            
+            document.getElementById('resultBox').classList.remove('show');
+            document.getElementById('eventCard').style.display = 'block';
+            
+            showEvent(events[currentEventIndex]);
+            updateUI();
+        }
+        
+        // 게임 오버
+        function showGameOver(message) {
+            document.getElementById('eventCard').innerHTML = `
+                <div class="event-title">게임 종료</div>
+                <div class="event-text">${message}</div>
+                <div class="event-text">Day ${gameState.day}까지 버텼습니다.</div>
+                <button class="continue-btn" onclick="location.reload()">다시 시작</button>
+            `;
+        }
+        
+        // 초기화
+        showEvent(events[0]);
+        updateUI();
+    </script>
+</body>
+</html>
